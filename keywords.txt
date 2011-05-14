@@ -1,0 +1,33 @@
+#######################################
+# Syntax Coloring Map For HttpClient
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+HttpClient	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+get	KEYWORD2
+post	KEYWORD2
+put	KEYWORD2
+startRequest	KEYWORD2
+sendHeader	KEYWORD2
+sendBasicAuth	KEYWORD2
+finishRequest	KEYWORD2
+responseStatusCode	KEYWORD2
+readHeader	KEYWORD2
+skipResponseHeaders	KEYWORD2
+endOfHeadersReached	KEYWORD2
+endOfBodyReached	KEYWORD2
+eof	KEYWORD2
+contentLength	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
