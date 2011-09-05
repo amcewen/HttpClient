@@ -9,7 +9,7 @@
 #include <HttpClient.h>
 #include <b64.h>
 #include <Ethernet.h>
-#include <Client.h>
+#include <EthernetClient.h>
 
 // This example downloads the URL "http://arduino.cc/"
 
@@ -44,7 +44,7 @@ void loop()
 {
   int err =0;
   
-  Client c;
+  EthernetClient c;
   HttpClient http(c);
   
   err = http.get(kHostname, 80, kPath);
@@ -77,8 +77,8 @@ void loop()
         unsigned long timeoutStart = millis();
         char c;
         // Whilst we haven't timed out & haven't reached the end of the body
-        while (http.connected() &&
-               ( (millis() - timeoutStart) < kNetworkTimeout ))
+        while ( (http.connected() || http.available()) &&
+               ((millis() - timeoutStart) < kNetworkTimeout) )
         {
             if (http.available())
             {

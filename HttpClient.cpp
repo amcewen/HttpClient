@@ -4,9 +4,9 @@
 
 #include "HttpClient.h"
 #include <../b64/b64.h>
+#include <Dns.h>
 #include <string.h>
 #include <ctype.h>
-#include "wiring.h"
 
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.0";
@@ -16,10 +16,19 @@ const char* HttpClient::kPut = "PUT";
 const char* HttpClient::kDelete = "DELETE";
 const char* HttpClient::kContentLengthPrefix = "Content-Length: ";
 
-HttpClient::HttpClient(Client& aClient)
- : iClient(&aClient)
+HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
+ : iClient(&aClient), iProxyPort(aProxyPort)
 {
   resetState();
+  if (aProxy)
+  {
+    // Resolve the IP address for the proxy
+    DNSClient dns;
+    dns.begin(Ethernet.dnsServerIP());
+    // Not ideal that we discard any errors here, but not a lot we can do in the ctor
+    // and we'll get a connect error later anyway
+    (void)dns.getHostByName(aProxy, iProxyAddress);
+  }
 }
 
 void HttpClient::resetState()
@@ -44,16 +53,29 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
         return HttpErrAPI;
     }
 
-    if (!iClient->connect(aServerName, aServerPort))
+    if (iProxyPort)
     {
+        if (!iClient->connect(iProxyAddress, iProxyPort))
+        {
 #ifdef LOGGING
-        Serial.println("Connection failed");
+            Serial.println("Proxy connection failed");
 #endif
-        return HttpErrConnectionFailed;
+            return HttpErrConnectionFailed;
+        }
+    }
+    else
+    {
+        if (!iClient->connect(aServerName, aServerPort))
+        {
+#ifdef LOGGING
+            Serial.println("Connection failed");
+#endif
+            return HttpErrConnectionFailed;
+        }
     }
 
     // Now we're connected, send the first part of the request
-    return sendInitialHeaders(aServerName, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
+    return sendInitialHeaders(aServerName, IPAddress(0,0,0,0), aServerPort, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
 }
 
 int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPort, const char* aServerName, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
@@ -63,19 +85,32 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPo
         return HttpErrAPI;
     }
 
-    if (!iClient->connect(aServerAddress, aServerPort))
+    if (iProxyPort)
     {
+        if (!iClient->connect(iProxyAddress, iProxyPort))
+        {
 #ifdef LOGGING
-        Serial.println("Connection failed");
+            Serial.println("Proxy connection failed");
 #endif
-        return HttpErrConnectionFailed;
+            return HttpErrConnectionFailed;
+        }
+    }
+    else
+    {
+        if (!iClient->connect(aServerAddress, aServerPort))
+        {
+#ifdef LOGGING
+            Serial.println("Connection failed");
+#endif
+            return HttpErrConnectionFailed;
+        }
     }
 
     // Now we're connected, send the first part of the request
-    return sendInitialHeaders(aServerName, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
+    return sendInitialHeaders(aServerName, aServerAddress, aServerPort, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
 }
 
-int HttpClient::sendInitialHeaders(const char* aServerName, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
+int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP, uint16_t aPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
 {
 #ifdef LOGGING
     Serial.println("Connected");
@@ -83,13 +118,33 @@ int HttpClient::sendInitialHeaders(const char* aServerName, const char* aURLPath
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
     print(aHttpMethod);
     print(" ");
+    if (iProxyPort)
+    {
+      // We're going through a proxy, send a full URL
+      print("http://");
+      if (aServerName)
+      {
+        // We've got a server name, so use it
+        print(aServerName);
+      }
+      else
+      {
+        // We'll have to use the IP address
+        print(aServerIP);
+      }
+      if (aPort != kHttpPort)
+      {
+        print(":");
+        print(aPort);
+      }
+    }
     print(aURLPath);
     println(" HTTP/1.0");
     // The host header, if required
     if (aServerName)
     {
-        print("Host: ");
-        println(aServerName);
+//        print("Host: ");
+//        println(aServerName);
     }
     // And user-agent string
     print("User-Agent: ");
@@ -339,14 +394,28 @@ bool HttpClient::endOfBodyReached()
 
 int HttpClient::read()
 {
-    int ret =iClient->read();
+    uint8_t b[1];
+    int ret = read(b, 1);
+    if (ret == 1)
+    {
+        return b[0];
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int HttpClient::read(uint8_t *buf, size_t size)
+{
+    int ret =iClient->read(buf, size);
     if (endOfHeadersReached() && iContentLength > 0)
     {
         // We're outputting the body now and we've seen a Content-Length header
         // So keep track of how many bytes are left
         if (ret >= 0)
 	{
-            iBodyLengthConsumed++;
+            iBodyLengthConsumed += ret;
 	}
     }
     return ret;

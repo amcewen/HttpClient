@@ -5,10 +5,11 @@
 #ifndef HttpClient_h
 #define HttpClient_h
 
+#include <Arduino.h>
 #include <IPAddress.h>
 #include "Ethernet.h"
 #include "Client.h"
-#include <../b64.h>
+#include <b64.h>
 
 class HttpClient : public Client
 {
@@ -31,13 +32,14 @@ public:
     };
 
     static const int kNoContentLengthHeader =-1;
+    static const int kHttpPort =80;
     static const char* kUserAgent;
     static const char* kGet;
     static const char* kPost;
     static const char* kPut;
     static const char* kDelete;
 
-    HttpClient(Client& aClient);
+    HttpClient(Client& aClient, const char* aProxy =NULL, uint16_t aProxyPort =0);
 
     /** Connect to the server and start to send a GET request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -274,15 +276,16 @@ public:
     int contentLength() { return iContentLength; };
 
     // Inherited from Print
-    virtual void write(uint8_t aByte) { iClient-> write(aByte); };
-    virtual void write(const char *aStr) { iClient->write(aStr); };
-    virtual void write(const uint8_t *aBuffer, size_t aSize) { iClient->write(aBuffer, aSize); };
+    virtual size_t write(uint8_t aByte) { return iClient-> write(aByte); };
+    virtual size_t write(const char *aStr) { return iClient->write(aStr); };
+    virtual size_t write(const uint8_t *aBuffer, size_t aSize) { return iClient->write(aBuffer, aSize); };
     // Inherited from Stream
     virtual int available() { return iClient->available(); };
     /** Read the next byte from the server.
       @return Byte read or -1 if there are no bytes available.
     */
     virtual int read();
+    virtual int read(uint8_t *buf, size_t size);
     virtual int peek() { return iClient->peek(); };
     virtual void flush() { return iClient->flush(); };
 
@@ -291,6 +294,7 @@ public:
     virtual int connect(const char *host, uint16_t port) { return iClient->connect(host, port); };
     virtual void stop();
     virtual uint8_t connected() { iClient->connected(); };
+    virtual operator bool() { return bool(iClient); };
 protected:
     /** Reset internal state data back to the "just initialised" state
     */
@@ -298,6 +302,9 @@ protected:
     /** Send the first part of the request and the initial headers.
       @param aServerName Name of the server being connected to.  If NULL, the
                          "Host" header line won't be sent
+      @param aServerIP  IP address of the server (only used if we're going through a
+                        proxy and aServerName is NULL
+      @param aServerPort  Port of the server being connected to.
       @param aURLPath	Url to request
       @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
       @param aUserAgent User-Agent string to send.  If NULL the default
@@ -307,6 +314,8 @@ protected:
       @return 0 if successful, else error
     */
     int sendInitialHeaders(const char* aServerName,
+                     IPAddress   aServerIP,
+                     uint16_t    aPort,
                      const char* aURLPath,
                      const char* aHttpMethod,
                      const char* aUserAgent,
@@ -343,6 +352,9 @@ protected:
     int iBodyLengthConsumed;
     // How far through a Content-Length header prefix we are
     const char* iContentLengthPtr;
+    // Address of the proxy to use, if we're using one
+    IPAddress iProxyAddress;
+    uint16_t iProxyPort;
 };
 
 #endif
