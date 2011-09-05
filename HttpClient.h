@@ -5,7 +5,10 @@
 #ifndef HttpClient_h
 #define HttpClient_h
 
+#include <IPAddress.h>
 #include "Ethernet.h"
+#include "Client.h"
+#include <../b64.h>
 
 class HttpClient : public Client
 {
