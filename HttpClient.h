@@ -277,7 +277,6 @@ public:
 
     // Inherited from Print
     virtual size_t write(uint8_t aByte) { return iClient-> write(aByte); };
-    virtual size_t write(const char *aStr) { return iClient->write(aStr); };
     virtual size_t write(const uint8_t *aBuffer, size_t aSize) { return iClient->write(aBuffer, aSize); };
     // Inherited from Stream
     virtual int available() { return iClient->available(); };

@@ -55,7 +55,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
 
     if (iProxyPort)
     {
-        if (!iClient->connect(iProxyAddress, iProxyPort))
+        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
         {
 #ifdef LOGGING
             Serial.println("Proxy connection failed");
@@ -65,7 +65,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
     }
     else
     {
-        if (!iClient->connect(aServerName, aServerPort))
+        if (!iClient->connect(aServerName, aServerPort) > 0)
         {
 #ifdef LOGGING
             Serial.println("Connection failed");
@@ -87,7 +87,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPo
 
     if (iProxyPort)
     {
-        if (!iClient->connect(iProxyAddress, iProxyPort))
+        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
         {
 #ifdef LOGGING
             Serial.println("Proxy connection failed");
@@ -97,7 +97,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPo
     }
     else
     {
-        if (!iClient->connect(aServerAddress, aServerPort))
+        if (!iClient->connect(aServerAddress, aServerPort) > 0)
         {
 #ifdef LOGGING
             Serial.println("Connection failed");
