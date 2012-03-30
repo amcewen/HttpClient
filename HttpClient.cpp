@@ -3,7 +3,7 @@
 // Released under Apache License, version 2.0
 
 #include "HttpClient.h"
-#include <../b64/b64.h>
+#include "b64.h"
 #include <Dns.h>
 #include <string.h>
 #include <ctype.h>
@@ -46,11 +46,17 @@ void HttpClient::stop()
   resetState();
 }
 
-int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
+void HttpClient::beginRequest()
 {
-    if (eIdle != iState)
+  iState = eRequestStarted;
+}
+
+int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+{
+    tHttpState initialState = iState;
+    if ((eIdle != iState) && (eRequestStarted != iState))
     {
-        return HttpErrAPI;
+        return HTTP_ERROR_API;
     }
 
     if (iProxyPort)
@@ -60,7 +66,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
 #ifdef LOGGING
             Serial.println("Proxy connection failed");
 #endif
-            return HttpErrConnectionFailed;
+            return HTTP_ERROR_CONNECTION_FAILED;
         }
     }
     else
@@ -70,19 +76,28 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
 #ifdef LOGGING
             Serial.println("Connection failed");
 #endif
-            return HttpErrConnectionFailed;
+            return HTTP_ERROR_CONNECTION_FAILED;
         }
     }
 
     // Now we're connected, send the first part of the request
-    return sendInitialHeaders(aServerName, IPAddress(0,0,0,0), aServerPort, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
+    int ret = sendInitialHeaders(aServerName, IPAddress(0,0,0,0), aServerPort, aURLPath, aHttpMethod, aUserAgent);
+    if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
+    {
+        // This was a simple version of the API, so terminate the headers now
+        finishHeaders();
+    }
+    // else we'll call it in endRequest or in the first call to print, etc.
+
+    return ret;
 }
 
-int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPort, const char* aServerName, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
+int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
 {
-    if (eIdle != iState)
+    tHttpState initialState = iState;
+    if ((eIdle != iState) && (eRequestStarted != iState))
     {
-        return HttpErrAPI;
+        return HTTP_ERROR_API;
     }
 
     if (iProxyPort)
@@ -92,7 +107,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPo
 #ifdef LOGGING
             Serial.println("Proxy connection failed");
 #endif
-            return HttpErrConnectionFailed;
+            return HTTP_ERROR_CONNECTION_FAILED;
         }
     }
     else
@@ -102,95 +117,96 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, uint16_t aServerPo
 #ifdef LOGGING
             Serial.println("Connection failed");
 #endif
-            return HttpErrConnectionFailed;
+            return HTTP_ERROR_CONNECTION_FAILED;
         }
     }
 
     // Now we're connected, send the first part of the request
-    return sendInitialHeaders(aServerName, aServerAddress, aServerPort, aURLPath, aHttpMethod, aUserAgent, aAcceptList);
+    int ret = sendInitialHeaders(aServerName, aServerAddress, aServerPort, aURLPath, aHttpMethod, aUserAgent);
+    if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
+    {
+        // This was a simple version of the API, so terminate the headers now
+        finishHeaders();
+    }
+    // else we'll call it in endRequest or in the first call to print, etc.
+
+    return ret;
 }
 
-int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP, uint16_t aPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aAcceptList)
+int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP, uint16_t aPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
 {
 #ifdef LOGGING
     Serial.println("Connected");
 #endif
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
-    print(aHttpMethod);
-    print(" ");
+    iClient->print(aHttpMethod);
+    iClient->print(" ");
     if (iProxyPort)
     {
       // We're going through a proxy, send a full URL
-      print("http://");
+      iClient->print("http://");
       if (aServerName)
       {
         // We've got a server name, so use it
-        print(aServerName);
+        iClient->print(aServerName);
       }
       else
       {
         // We'll have to use the IP address
-        print(aServerIP);
+        iClient->print(aServerIP);
       }
       if (aPort != kHttpPort)
       {
-        print(":");
-        print(aPort);
+        iClient->print(":");
+        iClient->print(aPort);
       }
     }
-    print(aURLPath);
-    println(" HTTP/1.0");
+    iClient->print(aURLPath);
+    iClient->println(" HTTP/1.0");
     // The host header, if required
     if (aServerName)
     {
-//        print("Host: ");
-//        println(aServerName);
+        sendHeader("Host", aServerName);
     }
     // And user-agent string
-    print("User-Agent: ");
+    iClient->print("User-Agent: ");
     if (aUserAgent)
     {
-        println(aUserAgent);
+        iClient->println(aUserAgent);
     }
     else
     {
-        println(kUserAgent);
-    }
-    if (aAcceptList)
-    {
-        // We've got an accept list to send
-        print("Accept: ");
-        println(aAcceptList);
+        iClient->println(kUserAgent);
     }
 
     // Everything has gone well
     iState = eRequestStarted;
-    return HttpSuccess;
+    return HTTP_SUCCESS;
 }
 
 void HttpClient::sendHeader(const char* aHeader)
 {
-    println(aHeader);
+    iClient->println(aHeader);
 }
 
 void HttpClient::sendHeader(const char* aHeaderName, const char* aHeaderValue)
 {
-    print(aHeaderName);
-    print(": ");
-    println(aHeaderValue);
+    iClient->print(aHeaderName);
+    iClient->print(": ");
+    iClient->println(aHeaderValue);
 }
 
 void HttpClient::sendHeader(const char* aHeaderName, const int aHeaderValue)
 {
-    print(aHeaderName);
-    print(": ");
-    println(aHeaderValue);
+    iClient->print(aHeaderName);
+    iClient->print(": ");
+    iClient->println(aHeaderValue);
 }
 
 void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
 {
     // Send the initial part of this header line
-    print("Authorization: Basic ");
+    iClient->print("Authorization: Basic ");
     // Now Base64 encode "aUser:aPassword" and send that
     // This seems trickier than it should be but it's mostly to avoid either
     // (a) some arbitrarily sized buffer which hopes to be big enough, or
@@ -226,27 +242,37 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
             // NUL-terminate the output string
             output[4] = '\0';
             // And write it out
-            print((char*)output);
+            iClient->print((char*)output);
 // FIXME We might want to fill output with '=' characters if b64_encode doesn't
 // FIXME do it for us when we're encoding the final chunk
             inputOffset = 0;
         }
     }
     // And end the header we've sent
-    println();
+    iClient->println();
 }
 
-void HttpClient::finishRequest()
+void HttpClient::finishHeaders()
 {
-    println();
+    iClient->println();
     iState = eRequestSent;
+}
+
+void HttpClient::endRequest()
+{
+    if (iState < eRequestSent)
+    {
+        // We still need to finish off the headers
+        finishHeaders();
+    }
+    // else the end of headers has already been sent, so nothing to do here
 }
 
 int HttpClient::responseStatusCode()
 {
     if (iState < eRequestSent)
     {
-        return HttpErrAPI;
+        return HTTP_ERROR_API;
     }
     // The first line will be of the form Status-Line:
     //   HTTP-Version SP Status-Code SP Reason-Phrase CRLF
@@ -289,7 +315,7 @@ int HttpClient::responseStatusCode()
                     }
                     else
                     {
-                        return HttpErrInvalidResponse;
+                        return HTTP_ERROR_INVALID_RESPONSE;
                     }
                     break;
                 case eReadingStatusCode:
@@ -339,13 +365,13 @@ int HttpClient::responseStatusCode()
     else if (c != '\n')
     {
         // We must've timed out before we reached the end of the line
-        return HttpErrTimedOut;
+        return HTTP_ERROR_TIMED_OUT;
     }
     else
     {
         // This wasn't a properly formed status line, or at least not one we
         // could understand
-        return HttpErrInvalidResponse;
+        return HTTP_ERROR_INVALID_RESPONSE;
     }
 }
 
@@ -373,12 +399,12 @@ int HttpClient::skipResponseHeaders()
     if (endOfHeadersReached())
     {
         // Success
-        return HttpSuccess;
+        return HTTP_SUCCESS;
     }
     else
     {
         // We must've timed out
-        return HttpErrTimedOut;
+        return HTTP_ERROR_TIMED_OUT;
     }
 }
 

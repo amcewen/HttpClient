@@ -1,4 +1,4 @@
-// (c) Copyright 2010-2011 MCQN Ltd.
+// (c) Copyright 2010-2012 MCQN Ltd.
 // Released under Apache License, version 2.0
 //
 // Simple example to show how to use the HttpClient library
@@ -7,17 +7,16 @@
 
 #include <SPI.h>
 #include <HttpClient.h>
-#include <b64.h>
 #include <Ethernet.h>
 #include <EthernetClient.h>
 
 // This example downloads the URL "http://arduino.cc/"
 
 // Name of the server we want to connect to
-char* kHostname = "arduino.cc";
+const char kHostname[] = "arduino.cc";
 // Path to download (this is the bit after the hostname in the URL
 // that you want to download
-const char* kPath = "/";
+const char kPath[] = "/";
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
@@ -33,9 +32,7 @@ void setup()
 
   while (Ethernet.begin(mac) != 1)
   {
-#ifdef LOGGING
     Serial.println("Error getting IP address via DHCP, trying again...");
-#endif
     delay(15000);
   }  
 }
@@ -47,13 +44,11 @@ void loop()
   EthernetClient c;
   HttpClient http(c);
   
-  err = http.get(kHostname, 80, kPath);
+  err = http.get(kHostname, kPath);
   if (err == 0)
   {
     Serial.println("startedRequest ok");
 
-    http.finishRequest();
-  
     err = http.responseStatusCode();
     if (err >= 0)
     {

@@ -2,7 +2,6 @@ HttpClient is a library to make it easier to interact with web servers from Ardu
 
 Dependencies:
 - Requires the new Ethernet library API (with DHCP and DNS) which is in Arduino 1.0.
-- Requires the b64 base64 encoding library, available from https://github.com/amcewen/b64
 
 In normal usage, handles the outgoing request and Host header.  The returned status code is
 parsed for you, as is the Content-Length header (if present).
