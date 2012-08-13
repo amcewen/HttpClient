@@ -4,7 +4,9 @@
 
 #include "HttpClient.h"
 #include "b64.h"
+#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
 #include <Dns.h>
+#endif
 #include <string.h>
 #include <ctype.h>
 
@@ -16,6 +18,7 @@ const char* HttpClient::kPut = "PUT";
 const char* HttpClient::kDelete = "DELETE";
 const char* HttpClient::kContentLengthPrefix = "Content-Length: ";
 
+#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
 HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
  : iClient(&aClient), iProxyPort(aProxyPort)
 {
@@ -30,6 +33,13 @@ HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
     (void)dns.getHostByName(aProxy, iProxyAddress);
   }
 }
+#else
+HttpClient::HttpClient(Client& aClient)
+ : iClient(&aClient)
+{
+  resetState();
+}
+#endif
 
 void HttpClient::resetState()
 {
@@ -162,7 +172,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
       }
     }
     iClient->print(aURLPath);
-    iClient->println(" HTTP/1.0");
+    iClient->println(" HTTP/1.1");
     // The host header, if required
     if (aServerName)
     {

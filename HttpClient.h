@@ -7,7 +7,6 @@
 
 #include <Arduino.h>
 #include <IPAddress.h>
-#include "Ethernet.h"
 #include "Client.h"
 
 static const int HTTP_SUCCESS =0;
@@ -38,7 +37,11 @@ public:
 // FIXME Write longer API request, using port and user-agent, example
 // FIXME Update tempToPachube example to calculate Content-Length correctly
 
+#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
     HttpClient(Client& aClient, const char* aProxy =NULL, uint16_t aProxyPort =0);
+#else
+    HttpClient(Client& aClient);
+#endif
 
     /** Start a more complex request.
         Use this when you need to send additional headers in the request,
