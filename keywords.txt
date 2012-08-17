@@ -25,7 +25,7 @@ readHeader	KEYWORD2
 skipResponseHeaders	KEYWORD2
 endOfHeadersReached	KEYWORD2
 endOfBodyReached	KEYWORD2
-eof	KEYWORD2
+completed	KEYWORD2
 contentLength	KEYWORD2
 
 #######################################
