@@ -35,7 +35,7 @@ HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
 }
 #else
 HttpClient::HttpClient(Client& aClient)
- : iClient(&aClient)
+ : iClient(&aClient), iProxyPort(0)
 {
   resetState();
 }
