@@ -309,46 +309,49 @@ int HttpClient::responseStatusCode()
             if (available())
             {
                 c = read();
-                switch(iState)
+                if (c != -1)
                 {
-                case eRequestSent:
-                    // We haven't reached the status code yet
-                    if ( (*statusPtr == '*') || (*statusPtr == c) )
+                    switch(iState)
                     {
-                        // This character matches, just move along
-                        statusPtr++;
-                        if (*statusPtr == '\0')
+                    case eRequestSent:
+                        // We haven't reached the status code yet
+                        if ( (*statusPtr == '*') || (*statusPtr == c) )
                         {
-                            // We've reached the end of the prefix
-                            iState = eReadingStatusCode;
+                            // This character matches, just move along
+                            statusPtr++;
+                            if (*statusPtr == '\0')
+                            {
+                                // We've reached the end of the prefix
+                                iState = eReadingStatusCode;
+                            }
                         }
-                    }
-                    else
-                    {
-                        return HTTP_ERROR_INVALID_RESPONSE;
-                    }
-                    break;
-                case eReadingStatusCode:
-                    if (isdigit(c))
-                    {
-                        // This assumes we won't get more than the 3 digits we
-                        // want
-                        iStatusCode = iStatusCode*10 + (c - '0');
-                    }
-                    else
-                    {
-                        // We've reached the end of the status code
-                        // We could sanity check it here or double-check for ' '
-                        // rather than anything else, but let's be lenient
-                        iState = eStatusCodeRead;
-                    }
-                    break;
-                case eStatusCodeRead:
-                    // We're just waiting for the end of the line now
-                    break;
-                };
-                // We read something, reset the timeout counter
-                timeoutStart = millis();
+                        else
+                        {
+                            return HTTP_ERROR_INVALID_RESPONSE;
+                        }
+                        break;
+                    case eReadingStatusCode:
+                        if (isdigit(c))
+                        {
+                            // This assumes we won't get more than the 3 digits we
+                            // want
+                            iStatusCode = iStatusCode*10 + (c - '0');
+                        }
+                        else
+                        {
+                            // We've reached the end of the status code
+                            // We could sanity check it here or double-check for ' '
+                            // rather than anything else, but let's be lenient
+                            iState = eStatusCodeRead;
+                        }
+                        break;
+                    case eStatusCodeRead:
+                        // We're just waiting for the end of the line now
+                        break;
+                    };
+                    // We read something, reset the timeout counter
+                    timeoutStart = millis();
+                }
             }
             else
             {
@@ -430,6 +433,7 @@ bool HttpClient::endOfBodyReached()
 
 int HttpClient::read()
 {
+#if 0 // Fails on WiFi because multi-byte read seems to be broken
     uint8_t b[1];
     int ret = read(b, 1);
     if (ret == 1)
@@ -440,6 +444,19 @@ int HttpClient::read()
     {
         return -1;
     }
+#else
+    int ret = iClient->read();
+    if (ret >= 0)
+    {
+        if (endOfHeadersReached() && iContentLength > 0)
+	{
+            // We're outputting the body now and we've seen a Content-Length header
+            // So keep track of how many bytes are left
+            iBodyLengthConsumed++;
+	}
+    }
+    return ret;
+#endif
 }
 
 int HttpClient::read(uint8_t *buf, size_t size)
