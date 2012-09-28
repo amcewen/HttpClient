@@ -176,7 +176,14 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     // The host header, if required
     if (aServerName)
     {
-        sendHeader("Host", aServerName);
+        iClient->print("Host: ");
+        iClient->print(aServerName);
+        if (aPort != kHttpPort)
+        {
+          iClient->print(":");
+          iClient->print(aPort);
+        }
+        iClient->println();
     }
     // And user-agent string
     iClient->print("User-Agent: ");
