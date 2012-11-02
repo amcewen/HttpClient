@@ -48,6 +48,7 @@ void HttpClient::resetState()
   iContentLength = 0;
   iBodyLengthConsumed = 0;
   iContentLengthPtr = 0;
+  iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
 void HttpClient::stop()
@@ -311,7 +312,7 @@ int HttpClient::responseStatusCode()
         const char* statusPtr = statusPrefix;
         // Whilst we haven't timed out & haven't reached the end of the headers
         while ((c != '\n') && 
-               ( (millis() - timeoutStart) < kHttpResponseTimeout ))
+               ( (millis() - timeoutStart) < iHttpResponseTimeout ))
         {
             if (available())
             {
@@ -401,7 +402,7 @@ int HttpClient::skipResponseHeaders()
     unsigned long timeoutStart = millis();
     // Whilst we haven't timed out & haven't reached the end of the headers
     while ((!endOfHeadersReached()) && 
-           ( (millis() - timeoutStart) < kHttpResponseTimeout ))
+           ( (millis() - timeoutStart) < iHttpResponseTimeout ))
     {
         if (available())
         {
