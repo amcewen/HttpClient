@@ -173,7 +173,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
       }
     }
     iClient->print(aURLPath);
-    iClient->println(" HTTP/1.1");
+    iClient->println(" HTTP/1.0");
     // The host header, if required
     if (aServerName)
     {
