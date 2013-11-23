@@ -370,8 +370,10 @@ public:
     virtual int connect(IPAddress ip, uint16_t port) { return iClient->connect(ip, port); };
     virtual int connect(const char *host, uint16_t port) { return iClient->connect(host, port); };
     virtual void stop();
-    virtual uint8_t connected() { iClient->connected(); };
+    virtual uint8_t connected() { return iClient->connected(); };
     virtual operator bool() { return bool(iClient); };
+    virtual uint32_t httpResponseTimeout() { return iHttpResponseTimeout; };
+    virtual void setHttpResponseTimeout(uint32_t timeout) { iHttpResponseTimeout = timeout; };
 protected:
     /** Reset internal state data back to the "just initialised" state
     */
@@ -434,6 +436,7 @@ protected:
     // Address of the proxy to use, if we're using one
     IPAddress iProxyAddress;
     uint16_t iProxyPort;
+    uint32_t iHttpResponseTimeout;
 };
 
 #endif
