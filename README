@@ -3,6 +3,13 @@ HttpClient is a library to make it easier to interact with web servers from Ardu
 Dependencies:
 - Requires the new Ethernet library API (with DHCP and DNS) which is in Arduino 1.0.
 
+Installation:
+- Click the "Download Zip" button on the right-hand-side of https://github.com/amcewen/HttpClient and save the file somewhere
+- Run the Arduino IDE
+- In the IDE, go to the Sketch -> Import Library -> Add Library... menu option
+- Find the zip file that you saved in the first step, and choose that
+- Check that it has been successfully added by opening the Sketch -> Import Library menu.  You should now see HttpClient listed among the available libraries.
+
 In normal usage, handles the outgoing request and Host header.  The returned status code is
 parsed for you, as is the Content-Length header (if present).
 
