@@ -11,7 +11,6 @@
 #include <ctype.h>
 
 // Initialize constants
-const char* HttpClient::kUserAgent = "Arduino/2.0";
 const char* HttpClient::kGet = "GET";
 const char* HttpClient::kPost = "POST";
 const char* HttpClient::kPut = "PUT";
@@ -47,7 +46,7 @@ void HttpClient::resetState()
   iStatusCode = 0;
   iContentLength = 0;
   iBodyLengthConsumed = 0;
-  iContentLengthPtr = 0;
+  iContentLengthPtr = kContentLengthPrefix;
   iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
@@ -173,7 +172,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
       }
     }
     iClient->print(aURLPath);
-    iClient->println(" HTTP/1.1");
+    iClient->println(" HTTP/1.0");
     // The host header, if required
     if (aServerName)
     {
@@ -187,14 +186,10 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
         iClient->println();
     }
     // And user-agent string
-    iClient->print("User-Agent: ");
     if (aUserAgent)
     {
+        iClient->print("User-Agent: ");
         iClient->println(aUserAgent);
-    }
-    else
-    {
-        iClient->println(kUserAgent);
     }
 
     // Everything has gone well

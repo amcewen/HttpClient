@@ -28,7 +28,6 @@ class HttpClient : public Client
 public:
     static const int kNoContentLengthHeader =-1;
     static const int kHttpPort =80;
-    static const char* kUserAgent;
     static const char* kGet;
     static const char* kPost;
     static const char* kPut;
@@ -60,8 +59,7 @@ public:
                           "Host" header line won't be sent
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int get(const char* aServerName, uint16_t aServerPort, const char* aURLPath, 
@@ -72,8 +70,7 @@ public:
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int get(const char* aServerName, const char* aURLPath, const char* aUserAgent =NULL)
@@ -86,8 +83,7 @@ public:
                             "Host" header line won't be sent
       @param aServerPort    Port to connect to on the server
       @param aURLPath       Url to request
-      @param aUserAgent     User-Agent string to send.  If NULL the default
-                            user-agent kUserAgent will be sent
+      @param aUserAgent     User-Agent string to send.
       @return 0 if successful, else error
     */
     int get(const IPAddress& aServerAddress,
@@ -103,8 +99,7 @@ public:
       @param aServerName    Name of the server being connected to.  If NULL, the
                             "Host" header line won't be sent
       @param aURLPath       Url to request
-      @param aUserAgent     User-Agent string to send.  If NULL the default
-                            user-agent kUserAgent will be sent
+      @param aUserAgent     User-Agent string to send.
       @return 0 if successful, else error
     */
     int get(const IPAddress& aServerAddress,
@@ -118,8 +113,7 @@ public:
                           "Host" header line won't be sent
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int post(const char* aServerName, 
@@ -132,8 +126,7 @@ public:
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int post(const char* aServerName, 
@@ -148,8 +141,7 @@ public:
                           "Host" header line won't be sent
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int post(const IPAddress& aServerAddress,
@@ -165,8 +157,7 @@ public:
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int post(const IPAddress& aServerAddress,
@@ -180,8 +171,7 @@ public:
                           "Host" header line won't be sent
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int put(const char* aServerName, 
@@ -194,8 +184,7 @@ public:
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int put(const char* aServerName, 
@@ -210,8 +199,7 @@ public:
                           "Host" header line won't be sent
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int put(const IPAddress& aServerAddress,
@@ -227,8 +215,7 @@ public:
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
       @param aURLPath     Url to request
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int put(const IPAddress& aServerAddress,
@@ -242,8 +229,7 @@ public:
       @param aServerPort  Port to connect to on the server
       @param aURLPath     Url to request
       @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
-      @param aUserAgent   User-Agent string to send.  If NULL the default
-                          user-agent kUserAgent will be sent
+      @param aUserAgent   User-Agent string to send.
       @return 0 if successful, else error
     */
     int startRequest(const char* aServerName,
@@ -259,8 +245,7 @@ public:
       @param aServerPort  Port to connect to on the server
       @param aURLPath	Url to request
       @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
-      @param aUserAgent User-Agent string to send.  If NULL the default
-                        user-agent kUserAgent will be sent
+      @param aUserAgent User-Agent string to send.
       @return 0 if successful, else error
     */
     int startRequest(const IPAddress& aServerAddress,
@@ -387,8 +372,7 @@ protected:
       @param aServerPort  Port of the server being connected to.
       @param aURLPath	Url to request
       @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
-      @param aUserAgent User-Agent string to send.  If NULL the default
-                        user-agent kUserAgent will be sent
+      @param aUserAgent User-Agent string to send.
       @return 0 if successful, else error
     */
     int sendInitialHeaders(const char* aServerName,
