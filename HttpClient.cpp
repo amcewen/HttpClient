@@ -195,6 +195,9 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     {
         sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
     }
+    // We don't support persistent connections, so tell the server to
+    // close this connection after we're done
+    sendHeader(HTTP_HEADER_CONNECTION, "close");
 
     // Everything has gone well
     iState = eRequestStarted;
