@@ -7,16 +7,10 @@
 #ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
 #include <Dns.h>
 #endif
-#include <string.h>
-#include <ctype.h>
 
 // Initialize constants
-const char* HttpClient::kUserAgent = "Arduino/2.0";
-const char* HttpClient::kGet = "GET";
-const char* HttpClient::kPost = "POST";
-const char* HttpClient::kPut = "PUT";
-const char* HttpClient::kDelete = "DELETE";
-const char* HttpClient::kContentLengthPrefix = "Content-Length: ";
+const char* HttpClient::kUserAgent = "Arduino/2.1";
+const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
 #ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
 HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
@@ -70,6 +64,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
         return HTTP_ERROR_API;
     }
 
+#ifdef PROXY_ENABLED
     if (iProxyPort)
     {
         if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
@@ -81,6 +76,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
         }
     }
     else
+#endif
     {
         if (!iClient->connect(aServerName, aServerPort) > 0)
         {
@@ -111,6 +107,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServe
         return HTTP_ERROR_API;
     }
 
+#ifdef PROXY_ENABLED
     if (iProxyPort)
     {
         if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
@@ -122,6 +119,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServe
         }
     }
     else
+#endif
     {
         if (!iClient->connect(aServerAddress, aServerPort) > 0)
         {
@@ -152,6 +150,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
     iClient->print(aHttpMethod);
     iClient->print(" ");
+#ifdef PROXY_ENABLED
     if (iProxyPort)
     {
       // We're going through a proxy, send a full URL
@@ -172,6 +171,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
         iClient->print(aPort);
       }
     }
+#endif
     iClient->print(aURLPath);
     iClient->println(" HTTP/1.1");
     // The host header, if required
@@ -187,14 +187,13 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
         iClient->println();
     }
     // And user-agent string
-    iClient->print("User-Agent: ");
     if (aUserAgent)
     {
-        iClient->println(aUserAgent);
+        sendHeader(HTTP_HEADER_USER_AGENT, aUserAgent);
     }
     else
     {
-        iClient->println(kUserAgent);
+        sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
     }
 
     // Everything has gone well

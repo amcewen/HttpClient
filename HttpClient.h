@@ -23,16 +23,23 @@ static const int HTTP_ERROR_TIMED_OUT =-3;
 // server?
 static const int HTTP_ERROR_INVALID_RESPONSE =-4;
 
+// Define some of the common methods and headers here
+// That lets other code reuse them without having to declare another copy
+// of them, so saves code space and RAM
+#define HTTP_METHOD_GET    "GET"
+#define HTTP_METHOD_POST   "POST"
+#define HTTP_METHOD_PUT    "PUT"
+#define HTTP_METHOD_DELETE "DELETE"
+#define HTTP_HEADER_CONTENT_LENGTH "Content-Length"
+#define HTTP_HEADER_CONNECTION     "Connection"
+#define HTTP_HEADER_USER_AGENT     "User-Agent"
+
 class HttpClient : public Client
 {
 public:
     static const int kNoContentLengthHeader =-1;
     static const int kHttpPort =80;
     static const char* kUserAgent;
-    static const char* kGet;
-    static const char* kPost;
-    static const char* kPut;
-    static const char* kDelete;
 
 // FIXME Write longer API request, using port and user-agent, example
 // FIXME Update tempToPachube example to calculate Content-Length correctly
@@ -66,7 +73,7 @@ public:
     */
     int get(const char* aServerName, uint16_t aServerPort, const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerName, aServerPort, aURLPath, kGet, aUserAgent); }
+      { return startRequest(aServerName, aServerPort, aURLPath, HTTP_METHOD_GET, aUserAgent); }
 
     /** Connect to the server and start to send a GET request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -77,7 +84,7 @@ public:
       @return 0 if successful, else error
     */
     int get(const char* aServerName, const char* aURLPath, const char* aUserAgent =NULL)
-      { return startRequest(aServerName, kHttpPort, aURLPath, kGet, aUserAgent); }
+      { return startRequest(aServerName, kHttpPort, aURLPath, HTTP_METHOD_GET, aUserAgent); }
 
     /** Connect to the server and start to send a GET request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -95,7 +102,7 @@ public:
             uint16_t aServerPort,
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, kGet, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, HTTP_METHOD_GET, aUserAgent); }
 
     /** Connect to the server and start to send a GET request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -111,7 +118,7 @@ public:
             const char* aServerName, 
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, kGet, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, HTTP_METHOD_GET, aUserAgent); }
 
     /** Connect to the server and start to send a POST request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -126,7 +133,7 @@ public:
              uint16_t aServerPort,
              const char* aURLPath, 
              const char* aUserAgent =NULL)
-      { return startRequest(aServerName, aServerPort, aURLPath, kPost, aUserAgent); }
+      { return startRequest(aServerName, aServerPort, aURLPath, HTTP_METHOD_POST, aUserAgent); }
 
     /** Connect to the server and start to send a POST request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -139,7 +146,7 @@ public:
     int post(const char* aServerName, 
              const char* aURLPath, 
              const char* aUserAgent =NULL)
-      { return startRequest(aServerName, kHttpPort, aURLPath, kPost, aUserAgent); }
+      { return startRequest(aServerName, kHttpPort, aURLPath, HTTP_METHOD_POST, aUserAgent); }
 
     /** Connect to the server and start to send a POST request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -157,7 +164,7 @@ public:
              uint16_t aServerPort,
              const char* aURLPath, 
              const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, kPost, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, HTTP_METHOD_POST, aUserAgent); }
 
     /** Connect to the server and start to send a POST request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -173,7 +180,7 @@ public:
              const char* aServerName, 
              const char* aURLPath, 
              const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, kPost, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, HTTP_METHOD_POST, aUserAgent); }
 
     /** Connect to the server and start to send a PUT request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -188,7 +195,7 @@ public:
             uint16_t aServerPort,
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerName, aServerPort, aURLPath, kPut, aUserAgent); }
+      { return startRequest(aServerName, aServerPort, aURLPath, HTTP_METHOD_PUT, aUserAgent); }
 
     /** Connect to the server and start to send a PUT request.
       @param aServerName  Name of the server being connected to.  If NULL, the
@@ -201,7 +208,7 @@ public:
     int put(const char* aServerName, 
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerName, kHttpPort, aURLPath, kPut, aUserAgent); }
+      { return startRequest(aServerName, kHttpPort, aURLPath, HTTP_METHOD_PUT, aUserAgent); }
 
     /** Connect to the server and start to send a PUT request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -219,7 +226,7 @@ public:
             uint16_t aServerPort,
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, kPut, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, HTTP_METHOD_PUT, aUserAgent); }
 
     /** Connect to the server and start to send a PUT request.  This version connects
       doesn't perform a DNS lookup and just connects to the given IP address.
@@ -235,7 +242,7 @@ public:
             const char* aServerName, 
             const char* aURLPath, 
             const char* aUserAgent =NULL)
-      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, kPut, aUserAgent); }
+      { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, HTTP_METHOD_PUT, aUserAgent); }
 
     /** Connect to the server and start to send the request.
       @param aServerName  Name of the server being connected to.
