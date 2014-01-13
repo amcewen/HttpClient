@@ -143,7 +143,7 @@ void startWiFi()
   Serial.println();
   
   // Connect to network and obtain an IP address using DHCP
-  if (WiFi.begin(ssid) == 0) {
+  if (WiFi.begin(ssid, pass) == 0) {
     Serial.println("Connected to WiFi!");
     // Wait 5 seconds to get a valid IP address
     delay(5000);
