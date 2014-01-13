@@ -1,15 +1,16 @@
 # HttpClient
 
-HttpClient is a library to make it easier to interact with web servers from Arduino.
+HttpClient is a library to make it easier to interact with web servers from MSP430 using Energia.
+This library is a fork of the [Arduino Library](https://github.com/amcewen/HttpClient)
 
 ## Dependencies
 
-- Requires the new Ethernet library API (with DHCP and DNS) which is in Arduino 1.0 and later
+- Requires the WiFi library found in Energia release 0101E0011 
 
 ## Installation
 
-1. Download the latest version of the library from https://github.com/amcewen/HttpClient/releases and save the file somewhere
-1. In the Arduino IDE, go to the Sketch -> Import Library -> Add Library... menu option
+1. Download the latest version of the library from https://github.com/zlalanne/HttpClient/releases and save the file somewhere
+1. In the Energia IDE, go to the Sketch -> Import Library -> Add Library... menu option
 1. Find the zip file that you saved in the first step, and choose that
 1. Check that it has been successfully added by opening the Sketch -> Import Library menu.  You should now see HttpClient listed among the available libraries.
 

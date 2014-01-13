@@ -7,41 +7,46 @@
 
 #include <SPI.h>
 #include <HttpClient.h>
-#include <Ethernet.h>
-#include <EthernetClient.h>
+#include <WiFi.h>
+#include <TCPClient.h>
 
-// This example downloads the URL "http://arduino.cc/"
+char ssid[] = "energia";    // your network SSID (name) 
+char pass[] = "supersecret"; // your network password (use for WPA, or use as key for WEP)
+
+// This example downloads the URL "http://energia.nu/"
 
 // Name of the server we want to connect to
-const char kHostname[] = "arduino.cc";
+const char kHostname[] = "energia.nu";
 // Path to download (this is the bit after the hostname in the URL
 // that you want to download
 const char kPath[] = "/";
-
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 // Number of milliseconds to wait without receiving any data before we give up
 const int kNetworkTimeout = 30*1000;
 // Number of milliseconds to wait if no data is available before trying again
 const int kNetworkDelay = 1000;
 
+WiFiClient c;
+
 void setup()
 {
   // initialize serial communications at 9600 bps:
-  Serial.begin(9600); 
+  Serial.begin(9600);
 
-  while (Ethernet.begin(mac) != 1)
-  {
-    Serial.println("Error getting IP address via DHCP, trying again...");
-    delay(15000);
-  }  
+  // Set communication pins for CC3000
+  WiFi.setCSpin(18);  // 18: P2_2 @ F5529, PE_0 @ LM4F/TM4C
+  WiFi.setENpin(2);   //  2: P6_5 @ F5529, PB_5 @ LM4F/TM4C
+  WiFi.setIRQpin(19); // 19: P2_0 @ F5529, PB_2 @ LM4F/TM4C
+
+  // Start WiFi
+  startWiFi();
+
 }
 
 void loop()
 {
   int err =0;
   
-  EthernetClient c;
   HttpClient http(c);
   
   err = http.get(kHostname, kPath);
@@ -114,6 +119,42 @@ void loop()
 
   // And just stop, now that we've tried a download
   while(1);
+}
+
+void printWifiStatus() {
+  // print the SSID of the network you're attached to:
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  // print your WiFi shield's IP address:
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+  Serial.println(ip);
+}
+
+
+void startWiFi()
+{
+  WiFi.disconnect();
+  c.stop();
+
+  Serial.print("Connecting LaunchPad to SSID:");
+  Serial.print(ssid);
+  Serial.println();
+  
+  // Connect to network and obtain an IP address using DHCP
+  if (WiFi.begin(ssid) == 0) {
+    Serial.println("Connected to WiFi!");
+    // Wait 5 seconds to get a valid IP address
+    delay(5000);
+    printWifiStatus();
+    Serial.println();
+  } else {
+    Serial.println("LaunchPad connected to network using DHCP");
+    Serial.println();
+  }
+  
+  delay(1000);
 }
 
 
