@@ -1,0 +1,10 @@
+{
+  "name": "MSP430-Energia-HttpClient",
+  "keywords": "http, web, client, ethernet",
+  "description": "HttpClient is a library to make it easier to interact with web servers from MSP430 using Energia",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/zlalanne/HttpClient.git"
+  }
+}
