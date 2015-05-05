@@ -41,7 +41,7 @@ void HttpClient::resetState()
   iStatusCode = 0;
   iContentLength = 0;
   iBodyLengthConsumed = 0;
-  iContentLengthPtr = 0;
+  iContentLengthPtr = kContentLengthPrefix;
   iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
