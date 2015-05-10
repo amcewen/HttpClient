@@ -56,7 +56,7 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aContentType, const char* aBody)
 {
     tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
@@ -92,14 +92,14 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
+        finishHeaders(aContentType, aBody);
     }
     // else we'll call it in endRequest or in the first call to print, etc.
 
     return ret;
 }
 
-int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aContentType, const char* aBody)
 {
     tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
@@ -135,7 +135,7 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServe
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
+        finishHeaders(aContentType, aBody);
     }
     // else we'll call it in endRequest or in the first call to print, etc.
 
@@ -272,9 +272,19 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
     iClient->println();
 }
 
-void HttpClient::finishHeaders()
+void HttpClient::finishHeaders(const char* aContentType, const char* aBody)
 {
+	if (aContentType)
+		sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
+	
+	if (aBody)
+		sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(aBody));
+
     iClient->println();
+	
+	if (aBody) 
+		iClient->println(aBody);
+	
     iState = eRequestSent;
 }
 
@@ -283,7 +293,7 @@ void HttpClient::endRequest()
     if (iState < eRequestSent)
     {
         // We still need to finish off the headers
-        finishHeaders();
+        finishHeaders(NULL, NULL);
     }
     // else the end of headers has already been sent, so nothing to do here
 }
