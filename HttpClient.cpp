@@ -274,17 +274,22 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
 
 void HttpClient::finishHeaders(const char* aContentType, const char* aBody)
 {
-	if (aContentType)
-		sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
-	
-	if (aBody)
-		sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(aBody));
-
+    if (aContentType)
+    {
+        sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
+    }
+    
+    if (aBody)
+    {
+        sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(aBody));
+    }
+    
     iClient->println();
-	
-	if (aBody) 
-		iClient->println(aBody);
-	
+    if (aBody)
+    {
+        iClient->println(aBody);
+    }
+    
     iState = eRequestSent;
 }
 

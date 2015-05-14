@@ -134,8 +134,8 @@ public:
              uint16_t aServerPort,
              const char* aURLPath,
              const char* aUserAgent =NULL,
-			 const char* aContentType =NULL,
-			 const char* aBody =NULL)
+             const char* aContentType =NULL,
+             const char* aBody =NULL)
       { return startRequest(aServerName, aServerPort, aURLPath, HTTP_METHOD_POST, aUserAgent, aContentType, aBody); }
 
     /** Connect to the server and start to send a POST request.
@@ -149,8 +149,8 @@ public:
     int post(const char* aServerName, 
              const char* aURLPath, 
              const char* aUserAgent =NULL,
-			 const char* aContentType =NULL,
-			 const char* aBody =NULL)
+             const char* aContentType =NULL,
+             const char* aBody =NULL)
       { return startRequest(aServerName, kHttpPort, aURLPath, HTTP_METHOD_POST, aUserAgent, aContentType, aBody); }
 
     /** Connect to the server and start to send a POST request.  This version connects
@@ -169,8 +169,8 @@ public:
              uint16_t aServerPort,
              const char* aURLPath, 
              const char* aUserAgent =NULL,
-			 const char* aContentType =NULL,
-			 const char* aBody =NULL)
+             const char* aContentType =NULL,
+             const char* aBody =NULL)
       { return startRequest(aServerAddress, aServerName, aServerPort, aURLPath, HTTP_METHOD_POST, aUserAgent, aContentType, aBody); }
 
     /** Connect to the server and start to send a POST request.  This version connects
@@ -187,8 +187,8 @@ public:
              const char* aServerName, 
              const char* aURLPath, 
              const char* aUserAgent =NULL,
-			 const char* aContentType =NULL,
-			 const char* aBody =NULL)
+             const char* aContentType =NULL,
+             const char* aBody =NULL)
       { return startRequest(aServerAddress, aServerName, kHttpPort, aURLPath, HTTP_METHOD_POST, aUserAgent, aContentType, aBody); }
 
     /** Connect to the server and start to send a PUT request.
