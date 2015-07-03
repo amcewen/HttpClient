@@ -1,0 +1,12 @@
+{
+  "name": "HttpClient",
+  "keywords": "http, web, client, ethernet",
+  "description": "HttpClient is a library to make it easier to interact with web servers",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/amcewen/HttpClient.git"
+  },
+  "frameworks": "arduino",
+  "platforms": "atmelavr"
+}
