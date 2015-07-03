@@ -9,7 +9,7 @@
 #endif
 
 // Initialize constants
-const char* HttpClient::kUserAgent = "Arduino/2.1";
+const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
 #ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
