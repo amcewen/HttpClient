@@ -457,6 +457,8 @@ protected:
     IPAddress iProxyAddress;
     uint16_t iProxyPort;
     uint32_t iHttpResponseTimeout;
+	static char* pBody;
+	static char* pContentType;
 };
 
 #endif
