@@ -311,10 +311,18 @@ void HttpClient::endRequest()
     {
         // We still need to finish off the headers
         finishHeaders(pContentType, pBody);
-	pBody = NULL;
-	pContentType = NULL;
+		pBody = NULL;
+		pContentType = NULL;
     }
     // else the end of headers has already been sent, so nothing to do here
+}
+
+void HttpClient::forceEndRequest()
+{
+    if (iState < eRequestSent)
+    {
+		iState = eRequestSent;
+    }
 }
 
 int HttpClient::responseStatusCode()

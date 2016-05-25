@@ -62,7 +62,12 @@ public:
         but you will also need to call beginRequest() at the start.
     */
     void endRequest();
-
+    /** End an even more complex request.
+        Use this when you need to create and send the request using connect and write,
+		avoiding the use of the library, but still want to receive the response by 
+		means of this library.
+    */
+	void forceEndRequest();
     /** Connect to the server and start to send a GET request.
       @param aServerName  Name of the server being connected to.  If NULL, the
                           "Host" header line won't be sent
