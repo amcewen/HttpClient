@@ -11,6 +11,10 @@
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
+// Store body and content type pointers here so they can be sent also from a complex
+// request with additional headers
+char* HttpClient::pBody = NULL;
+char* HttpClient::pContentType = NULL;
 
 #ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
 HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
@@ -56,7 +60,7 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aContentType, const char* aBody)
 {
     tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
@@ -92,14 +96,18 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
+        finishHeaders(aContentType, aBody);
     }
     // else we'll call it in endRequest or in the first call to print, etc.
+    else {
+		pBody = (char *)aBody;
+		pContentType = (char *)aContentType;
+    }
 
     return ret;
 }
 
-int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent, const char* aContentType, const char* aBody)
 {
     tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
@@ -135,9 +143,13 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServe
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
+        finishHeaders(aContentType, aBody);
     }
     // else we'll call it in endRequest or in the first call to print, etc.
+    else {
+		pBody = (char *)aBody;
+		pContentType = (char *)aContentType;
+    }
 
     return ret;
 }
@@ -272,9 +284,24 @@ void HttpClient::sendBasicAuth(const char* aUser, const char* aPassword)
     iClient->println();
 }
 
-void HttpClient::finishHeaders()
+void HttpClient::finishHeaders(const char* aContentType, const char* aBody)
 {
+    if (aContentType)
+    {
+        sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
+    }
+    
+    if (aBody)
+    {
+        sendHeader(HTTP_HEADER_CONTENT_LENGTH, strlen(aBody));
+    }
+    
     iClient->println();
+    if (aBody)
+    {
+        iClient->println(aBody);
+    }
+    
     iState = eRequestSent;
 }
 
@@ -283,9 +310,19 @@ void HttpClient::endRequest()
     if (iState < eRequestSent)
     {
         // We still need to finish off the headers
-        finishHeaders();
+        finishHeaders(pContentType, pBody);
+		pBody = NULL;
+		pContentType = NULL;
     }
     // else the end of headers has already been sent, so nothing to do here
+}
+
+void HttpClient::forceEndRequest()
+{
+    if (iState < eRequestSent)
+    {
+		iState = eRequestSent;
+    }
 }
 
 int HttpClient::responseStatusCode()
