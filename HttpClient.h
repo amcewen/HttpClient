@@ -45,6 +45,7 @@ public:
 // FIXME Update tempToPachube example to calculate Content-Length correctly
 
     HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort = kHttpPort);
+    HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = kHttpPort);
     HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
     /** Start a more complex request.
@@ -66,6 +67,9 @@ public:
     int get(const char* aURLPath)
       { return startRequest(aURLPath, HTTP_METHOD_GET); }
 
+    int get(const String& aURLPath)
+      { return get(aURLPath.c_str()); }
+
     /** Connect to the server and start to send a POST request.
       @param aURLPath     Url to request
       @return 0 if successful, else error
@@ -73,12 +77,18 @@ public:
     int post(const char* aURLPath)
       { return startRequest(aURLPath, HTTP_METHOD_POST); }
 
+    int post(const String& aURLPath)
+      { return post(aURLPath.c_str()); }
+
     /** Connect to the server and start to send a PUT request.
       @param aURLPath     Url to request
       @return 0 if successful, else error
     */
     int put(const char* aURLPath)
       { return startRequest(aURLPath, HTTP_METHOD_PUT); }
+
+    int put(const String& aURLPath)
+      { return put(aURLPath.c_str()); }
 
     /** Connect to the server and start to send the request.
       @param aURLPath     Url to request

@@ -15,6 +15,11 @@ HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServe
   resetState();
 }
 
+HttpClient::HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort)
+ : HttpClient(aClient, aServerName.c_str(), aServerPort)
+{
+}
+
 HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
  : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort)
 {
