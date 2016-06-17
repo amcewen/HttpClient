@@ -6,8 +6,8 @@
 // outputs the content to the serial port
 
 #include <SPI.h>
-#include <ArduinoHttpClient.h>
 #include <WiFi101.h>
+#include <ArduinoHttpClient.h>
 
 // This example downloads the URL "http://arduino.cc/"
 
@@ -82,6 +82,7 @@ void loop()
         char c;
         // Whilst we haven't timed out & haven't reached the end of the body
         while ( (http.connected() || http.available()) &&
+               (bodyLen > 0 || bodyLen != HttpClient::kNoContentLengthHeader) &&
                ((millis() - timeoutStart) < kNetworkTimeout) )
         {
             if (http.available())
