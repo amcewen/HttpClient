@@ -159,6 +159,7 @@ public:
     /** Check if a header is available to be read.
       Use readHeaderName() to read header name, and readHeaderValue() to
       read the header value
+      MUST be called after responseStatusCode() and before contentLength()
     */
     bool headerAvailable();
 
@@ -177,6 +178,7 @@ public:
       through the headers.  Check whether or not the end of the headers has
       been reached by calling endOfHeadersReached(), although after that point
       this will still return data as read() would, but slightly less efficiently
+      MUST be called after responseStatusCode() and before contentLength()
       @return The next character of the response headers
     */
     int readHeader();
@@ -186,6 +188,7 @@ public:
       returned in the response.  You can also use it after you've found all of
       the headers you're interested in, and just want to get on with processing
       the body.
+      MUST be called after responseStatusCode()
       @return HTTP_SUCCESS if successful, else an error code
     */
     int skipResponseHeaders();
@@ -204,10 +207,12 @@ public:
     virtual bool completed() { return endOfBodyReached(); };
 
     /** Return the length of the body.
+      Also skips response headers if they have not been read already
+      MUST be called after responseStatusCode()
       @return Length of the body, in bytes, or kNoContentLengthHeader if no
       Content-Length header was returned by the server
     */
-    int contentLength() { return iContentLength; };
+    int contentLength();
 
     // Inherited from Print
     // Note: 1st call to these indicates the user is sending the body, so if need

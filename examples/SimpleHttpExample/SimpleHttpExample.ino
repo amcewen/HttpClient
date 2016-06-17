@@ -68,45 +68,44 @@ void loop()
       // similar "success" code (200-299) before carrying on,
       // but we'll print out whatever response we get
 
-      err = http.skipResponseHeaders();
-      if (err >= 0)
+      // If you are interesting in the response headers, you
+      // can read them here:
+      //while(http.headerAvailable())
+      //{
+      //  String headerName = http.readHeaderName();
+      //  String headerValue = http.readHeaderValue();
+      //}
+
+      int bodyLen = http.contentLength();
+      Serial.print("Content length is: ");
+      Serial.println(bodyLen);
+      Serial.println();
+      Serial.println("Body returned follows:");
+    
+      // Now we've got to the body, so we can print it out
+      unsigned long timeoutStart = millis();
+      char c;
+      // Whilst we haven't timed out & haven't reached the end of the body
+      while ( (http.connected() || http.available()) &&
+             (bodyLen > 0 || bodyLen != HttpClient::kNoContentLengthHeader) &&
+             ((millis() - timeoutStart) < kNetworkTimeout) )
       {
-        int bodyLen = http.contentLength();
-        Serial.print("Content length is: ");
-        Serial.println(bodyLen);
-        Serial.println();
-        Serial.println("Body returned follows:");
-      
-        // Now we've got to the body, so we can print it out
-        unsigned long timeoutStart = millis();
-        char c;
-        // Whilst we haven't timed out & haven't reached the end of the body
-        while ( (http.connected() || http.available()) &&
-               (bodyLen > 0 || bodyLen != HttpClient::kNoContentLengthHeader) &&
-               ((millis() - timeoutStart) < kNetworkTimeout) )
-        {
-            if (http.available())
-            {
-                c = http.read();
-                // Print out this character
-                Serial.print(c);
-               
-                bodyLen--;
-                // We read something, reset the timeout counter
-                timeoutStart = millis();
-            }
-            else
-            {
-                // We haven't got any data, so let's pause to allow some to
-                // arrive
-                delay(kNetworkDelay);
-            }
-        }
-      }
-      else
-      {
-        Serial.print("Failed to skip response headers: ");
-        Serial.println(err);
+          if (http.available())
+          {
+              c = http.read();
+              // Print out this character
+              Serial.print(c);
+             
+              bodyLen--;
+              // We read something, reset the timeout counter
+              timeoutStart = millis();
+          }
+          else
+          {
+              // We haven't got any data, so let's pause to allow some to
+              // arrive
+              delay(kNetworkDelay);
+          }
       }
     }
     else

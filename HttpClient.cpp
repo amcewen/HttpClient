@@ -384,6 +384,17 @@ int HttpClient::skipResponseHeaders()
     }
 }
 
+int HttpClient::contentLength()
+{
+    // skip the response headers, if they haven't been read already 
+    if (!endOfHeadersReached())
+    {
+        skipResponseHeaders();
+    }
+
+    return iContentLength;
+}
+
 bool HttpClient::endOfBodyReached()
 {
     if (endOfHeadersReached() && (contentLength() != kNoContentLengthHeader))
