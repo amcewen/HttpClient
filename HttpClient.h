@@ -148,11 +148,6 @@ public:
     void sendBasicAuth(const String& aUser, const String& aPassword)
       { sendBasicAuth(aUser.c_str(), aPassword.c_str()); }
 
-    /** Finish sending the HTTP request.  This basically just sends the blank
-      line to signify the end of the request
-    */
-    void finishRequest();
-
     /** Get the HTTP status code contained in the response.
       For example, 200 for successful request, 404 for file not found, etc.
     */
