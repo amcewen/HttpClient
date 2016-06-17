@@ -51,9 +51,9 @@ void loop()
   int err =0;
   
   WiFiClient c;
-  HttpClient http(c);
+  HttpClient http(c, kHostname);
   
-  err = http.get(kHostname, kPath);
+  err = http.get(kPath);
   if (err == 0)
   {
     Serial.println("startedRequest ok");

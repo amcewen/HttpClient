@@ -9,8 +9,14 @@
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
-HttpClient::HttpClient(Client& aClient)
- : iClient(&aClient)
+HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
+ : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort)
+{
+  resetState();
+}
+
+HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
+ : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort)
 {
   resetState();
 }
@@ -36,7 +42,7 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
 {
     tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
@@ -44,16 +50,26 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
         return HTTP_ERROR_API;
     }
 
-    if (!iClient->connect(aServerName, aServerPort) > 0)
-    {
-#ifdef LOGGING
-        Serial.println("Connection failed");
-#endif
-        return HTTP_ERROR_CONNECTION_FAILED;
+    if (iServerName) {
+        if (!iClient->connect(iServerName, iServerPort) > 0)
+        {
+    #ifdef LOGGING
+            Serial.println("Connection failed");
+    #endif
+            return HTTP_ERROR_CONNECTION_FAILED;
+        }
+    } else {
+        if (!iClient->connect(iServerAddress, iServerPort) > 0)
+        {
+    #ifdef LOGGING
+            Serial.println("Connection failed");
+    #endif
+            return HTTP_ERROR_CONNECTION_FAILED;
+        }    
     }
 
     // Now we're connected, send the first part of the request
-    int ret = sendInitialHeaders(aServerName, IPAddress(0,0,0,0), aServerPort, aURLPath, aHttpMethod, aUserAgent);
+    int ret = sendInitialHeaders(aURLPath, aHttpMethod);
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
@@ -64,35 +80,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
     return ret;
 }
 
-int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
-{
-    tHttpState initialState = iState;
-    if ((eIdle != iState) && (eRequestStarted != iState))
-    {
-        return HTTP_ERROR_API;
-    }
-
-    if (!iClient->connect(aServerAddress, aServerPort) > 0)
-    {
-#ifdef LOGGING
-        Serial.println("Connection failed");
-#endif
-        return HTTP_ERROR_CONNECTION_FAILED;
-    }
-
-    // Now we're connected, send the first part of the request
-    int ret = sendInitialHeaders(aServerName, aServerAddress, aServerPort, aURLPath, aHttpMethod, aUserAgent);
-    if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
-    {
-        // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
-    }
-    // else we'll call it in endRequest or in the first call to print, etc.
-
-    return ret;
-}
-
-int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP, uint16_t aPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod)
 {
 #ifdef LOGGING
     Serial.println("Connected");
@@ -104,26 +92,20 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     iClient->print(aURLPath);
     iClient->println(" HTTP/1.1");
     // The host header, if required
-    if (aServerName)
+    if (iServerName)
     {
         iClient->print("Host: ");
-        iClient->print(aServerName);
-        if (aPort != kHttpPort)
+        iClient->print(iServerName);
+        if (iServerPort != kHttpPort)
         {
           iClient->print(":");
-          iClient->print(aPort);
+          iClient->print(iServerPort);
         }
         iClient->println();
     }
     // And user-agent string
-    if (aUserAgent)
-    {
-        sendHeader(HTTP_HEADER_USER_AGENT, aUserAgent);
-    }
-    else
-    {
-        sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
-    }
+    sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
+
     // We don't support persistent connections, so tell the server to
     // close this connection after we're done
     sendHeader(HTTP_HEADER_CONNECTION, "close");
