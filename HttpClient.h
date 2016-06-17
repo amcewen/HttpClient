@@ -48,14 +48,6 @@ public:
     HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = kHttpPort);
     HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
-    /** Enables connection keep-alive mode
-    */
-    void connectionKeepAlive();
-
-    /** Disables sending the default request headers (Host and User Agent)
-    */
-    void noDefaultRequestHeaders();
-
     /** Start a more complex request.
         Use this when you need to send additional headers in the request,
         but you will also need to call endRequest() when you are finished.
@@ -214,6 +206,14 @@ public:
       Content-Length header was returned by the server
     */
     int contentLength();
+
+    /** Enables connection keep-alive mode
+    */
+    void connectionKeepAlive();
+
+    /** Disables sending the default request headers (Host and User Agent)
+    */
+    void noDefaultRequestHeaders();
 
     // Inherited from Print
     // Note: 1st call to these indicates the user is sending the body, so if need
