@@ -359,18 +359,6 @@ bool HttpClient::endOfBodyReached()
 
 int HttpClient::read()
 {
-#if 0 // Fails on WiFi because multi-byte read seems to be broken
-    uint8_t b[1];
-    int ret = read(b, 1);
-    if (ret == 1)
-    {
-        return b[0];
-    }
-    else
-    {
-        return -1;
-    }
-#else
     int ret = iClient->read();
     if (ret >= 0)
     {
@@ -382,7 +370,6 @@ int HttpClient::read()
         }
     }
     return ret;
-#endif
 }
 
 int HttpClient::read(uint8_t *buf, size_t size)
