@@ -48,6 +48,8 @@ public:
     HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = kHttpPort);
     HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
+    void connectionKeepAlive();
+
     /** Start a more complex request.
         Use this when you need to send additional headers in the request,
         but you will also need to call endRequest() when you are finished.
@@ -247,6 +249,10 @@ protected:
     */
     void finishHeaders();
 
+    /** Reading any pending data from the client (used in connection keep alive mode)
+    */
+    void flushClientRx();
+
     // Number of milliseconds that we wait each time there isn't any data
     // available to be read (during status code and header processing)
     static const int kHttpWaitForDataDelay = 1000;
@@ -284,6 +290,7 @@ protected:
     // How far through a Content-Length header prefix we are
     const char* iContentLengthPtr;
     uint32_t iHttpResponseTimeout;
+    bool iConnectionClose;
     String iHeaderLine;
 };
 
