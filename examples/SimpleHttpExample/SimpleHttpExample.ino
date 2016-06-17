@@ -87,7 +87,7 @@ void loop()
       char c;
       // Whilst we haven't timed out & haven't reached the end of the body
       while ( (http.connected() || http.available()) &&
-             (bodyLen > 0 || bodyLen != HttpClient::kNoContentLengthHeader) &&
+             (!http.endOfBodyReached()) &&
              ((millis() - timeoutStart) < kNetworkTimeout) )
       {
           if (http.available())
@@ -96,7 +96,6 @@ void loop()
               // Print out this character
               Serial.print(c);
              
-              bodyLen--;
               // We read something, reset the timeout counter
               timeoutStart = millis();
           }
