@@ -52,6 +52,10 @@ public:
     */
     void connectionKeepAlive();
 
+    /** Disables sending the default request headers (Host and User Agent)
+    */
+    void noDefaultRequestHeaders();
+
     /** Start a more complex request.
         Use this when you need to send additional headers in the request,
         but you will also need to call endRequest() when you are finished.
@@ -293,6 +297,7 @@ protected:
     const char* iContentLengthPtr;
     uint32_t iHttpResponseTimeout;
     bool iConnectionClose;
+    bool iSendDefaultRequestHeaders;
     String iHeaderLine;
 };
 

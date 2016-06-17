@@ -11,7 +11,7 @@ const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
 HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
  : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
-   iConnectionClose(true)
+   iConnectionClose(true), iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
@@ -23,7 +23,7 @@ HttpClient::HttpClient(Client& aClient, const String& aServerName, uint16_t aSer
 
 HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
  : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
-   iConnectionClose(true)
+   iConnectionClose(true), iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
@@ -47,6 +47,11 @@ void HttpClient::stop()
 void HttpClient::connectionKeepAlive()
 {
   iConnectionClose = false;
+}
+
+void HttpClient::noDefaultRequestHeaders()
+{
+  iSendDefaultRequestHeaders = false;
 }
 
 void HttpClient::beginRequest()
@@ -120,20 +125,23 @@ int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod
 
     iClient->print(aURLPath);
     iClient->println(" HTTP/1.1");
-    // The host header, if required
-    if (iServerName)
+    if (iSendDefaultRequestHeaders)
     {
-        iClient->print("Host: ");
-        iClient->print(iServerName);
-        if (iServerPort != kHttpPort)
+        // The host header, if required
+        if (iServerName)
         {
-          iClient->print(":");
-          iClient->print(iServerPort);
+            iClient->print("Host: ");
+            iClient->print(iServerName);
+            if (iServerPort != kHttpPort)
+            {
+              iClient->print(":");
+              iClient->print(iServerPort);
+            }
+            iClient->println();
         }
-        iClient->println();
+        // And user-agent string
+        sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
     }
-    // And user-agent string
-    sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
 
     if (iConnectionClose)
     {
