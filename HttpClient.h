@@ -440,9 +440,11 @@ protected:
     int iBodyLengthConsumed;
     // How far through a Content-Length header prefix we are
     const char* iContentLengthPtr;
+#ifdef PROXY_ENABLED
     // Address of the proxy to use, if we're using one
     IPAddress iProxyAddress;
     uint16_t iProxyPort;
+#endif
     uint32_t iHttpResponseTimeout;
 };
 
