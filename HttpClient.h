@@ -105,6 +105,9 @@ public:
     */
     void sendHeader(const char* aHeader);
 
+    void sendHeader(const String& aHeader)
+      { sendHeader(aHeader.c_str()); }
+
     /** Send an additional header line.  This is an alternate form of
       sendHeader() which takes the header name and content as separate strings.
       The call will add the ": " to separate the header, so for example, to
@@ -113,6 +116,9 @@ public:
       @param aHeaderValue Value for that header
     */
     void sendHeader(const char* aHeaderName, const char* aHeaderValue);
+
+    void sendHeader(const String& aHeaderName, const String& aHeaderValue)
+      { sendHeader(aHeaderName.c_str(), aHeaderValue.c_str()); }
 
     /** Send an additional header line.  This is an alternate form of
       sendHeader() which takes the header name and content separately but where
@@ -124,6 +130,9 @@ public:
     */
     void sendHeader(const char* aHeaderName, const int aHeaderValue);
 
+    void sendHeader(const String& aHeaderName, const int aHeaderValue)
+      { sendHeader(aHeaderName.c_str(), aHeaderValue); }
+
     /** Send a basic authentication header.  This will encode the given username
       and password, and send them in suitable header line for doing Basic
       Authentication.
@@ -131,6 +140,9 @@ public:
       @param aPassword Password for the user aUser
     */
     void sendBasicAuth(const char* aUser, const char* aPassword);
+
+    void sendBasicAuth(const String& aUser, const String& aPassword)
+      { sendBasicAuth(aUser.c_str(), aPassword.c_str()); }
 
     /** Finish sending the HTTP request.  This basically just sends the blank
       line to signify the end of the request
