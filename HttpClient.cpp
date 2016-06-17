@@ -252,7 +252,7 @@ int HttpClient::responseStatusCode()
     // Where HTTP-Version is of the form:
     //   HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 
-    char c = '\0';
+    int c = '\0';
     do
     {
         // Make sure the status code is reset, and likewise the state.  This
@@ -310,6 +310,9 @@ int HttpClient::responseStatusCode()
                         break;
                     case eStatusCodeRead:
                         // We're just waiting for the end of the line now
+                        break;
+
+                    default:
                         break;
                     };
                     // We read something, reset the timeout counter
