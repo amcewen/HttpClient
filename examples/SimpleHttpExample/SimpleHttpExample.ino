@@ -25,6 +25,9 @@ const int kNetworkTimeout = 30*1000;
 // Number of milliseconds to wait if no data is available before trying again
 const int kNetworkDelay = 1000;
 
+WiFiClient c;
+HttpClient http(c, kHostname);
+
 void setup()
 {
   //Initialize serial and wait for port to open:
@@ -49,9 +52,6 @@ void setup()
 void loop()
 {
   int err =0;
-  
-  WiFiClient c;
-  HttpClient http(c, kHostname);
   
   err = http.get(kPath);
   if (err == 0)
