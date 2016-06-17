@@ -142,6 +142,22 @@ public:
     */
     int responseStatusCode();
 
+    /** Check if a header is available to be read.
+      Use readHeaderName() to read header name, and readHeaderValue() to
+      read the header value
+    */
+    bool headerAvailable();
+
+    /** Read the name of the current response header.
+      Returns empty string if a header is not available.
+    */
+    String readHeaderName();
+
+    /** Read the vallue of the current response header.
+      Returns empty string if a header is not available.
+    */
+    String readHeaderValue();
+
     /** Read the next character of the response headers.
       This functions in the same way as read() but to be used when reading
       through the headers.  Check whether or not the end of the headers has
@@ -256,6 +272,7 @@ protected:
     // How far through a Content-Length header prefix we are
     const char* iContentLengthPtr;
     uint32_t iHttpResponseTimeout;
+    String iHeaderLine;
 };
 
 #endif

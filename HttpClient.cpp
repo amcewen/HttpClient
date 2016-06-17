@@ -372,6 +372,68 @@ int HttpClient::read()
     return ret;
 }
 
+bool HttpClient::headerAvailable()
+{
+    // clear the currently store header line
+    iHeaderLine = "";
+
+    while (!endOfHeadersReached())
+    {
+        // read a byte from the header
+        int c = readHeader();
+
+        if (c == '\r' || c == '\n')
+        {
+            if (iHeaderLine.length())
+            {
+                // end of the line, all done
+                break;
+            } 
+            else
+            {
+                // ignore any CR or LF characters
+                continue;
+            }
+        }
+
+        // append byte to header line
+        iHeaderLine += (char)c;
+    }
+
+    return (iHeaderLine.length() > 0);
+}
+
+String HttpClient::readHeaderName()
+{
+    int colonIndex = iHeaderLine.indexOf(':');
+
+    if (colonIndex == -1)
+    {
+        return "";
+    }
+
+    return iHeaderLine.substring(0, colonIndex);
+}
+
+String HttpClient::readHeaderValue()
+{
+    int colonIndex = iHeaderLine.indexOf(':');
+    int startIndex = colonIndex + 1;
+
+    if (colonIndex == -1)
+    {
+        return "";
+    }
+
+    // trim any leading whitespace
+    while (startIndex < (int)iHeaderLine.length() && isSpace(iHeaderLine[startIndex]))
+    {
+        startIndex++;
+    }
+
+    return iHeaderLine.substring(startIndex);
+}
+
 int HttpClient::read(uint8_t *buf, size_t size)
 {
     int ret =iClient->read(buf, size);
