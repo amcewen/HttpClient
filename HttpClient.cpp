@@ -375,11 +375,11 @@ int HttpClient::read()
     if (ret >= 0)
     {
         if (endOfHeadersReached() && iContentLength > 0)
-	{
+        {
             // We're outputting the body now and we've seen a Content-Length header
             // So keep track of how many bytes are left
             iBodyLengthConsumed++;
-	}
+        }
     }
     return ret;
 #endif
@@ -393,9 +393,9 @@ int HttpClient::read(uint8_t *buf, size_t size)
         // We're outputting the body now and we've seen a Content-Length header
         // So keep track of how many bytes are left
         if (ret >= 0)
-	{
+        {
             iBodyLengthConsumed += ret;
-	}
+        }
     }
     return ret;
 }
