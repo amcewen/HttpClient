@@ -6,19 +6,19 @@
 // outputs the content to the serial port
 
 #include <SPI.h>
-#include <HttpClient.h>
-#include <Ethernet.h>
-#include <EthernetClient.h>
+#include <ArduinoHttpClient.h>
+#include <WiFi101.h>
 
 // This example downloads the URL "http://arduino.cc/"
+
+char ssid[] = "yourNetwork";     //  your network SSID (name)
+char pass[] = "secretPassword";  // your network password
 
 // Name of the server we want to connect to
 const char kHostname[] = "arduino.cc";
 // Path to download (this is the bit after the hostname in the URL
 // that you want to download
 const char kPath[] = "/";
-
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 // Number of milliseconds to wait without receiving any data before we give up
 const int kNetworkTimeout = 30*1000;
@@ -27,21 +27,30 @@ const int kNetworkDelay = 1000;
 
 void setup()
 {
-  // initialize serial communications at 9600 bps:
-  Serial.begin(9600); 
+  //Initialize serial and wait for port to open:
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for native USB port only
+  }
 
-  while (Ethernet.begin(mac) != 1)
-  {
-    Serial.println("Error getting IP address via DHCP, trying again...");
-    delay(15000);
-  }  
+  // attempt to connect to Wifi network:
+  Serial.print("Attempting to connect to WPA SSID: ");
+  Serial.println(ssid);
+  while (WiFi.begin(ssid, pass) != WL_CONNECTED) {
+    // unsuccessful, retry in 4 seconds
+    Serial.print("failed ... ");
+    delay(4000);
+    Serial.print("retrying ... ");
+  }
+
+  Serial.println("connected");
 }
 
 void loop()
 {
   int err =0;
   
-  EthernetClient c;
+  WiFiClient c;
   HttpClient http(c);
   
   err = http.get(kHostname, kPath);
