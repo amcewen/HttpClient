@@ -56,6 +56,8 @@ void HttpClient::beginRequest()
 
 int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
 {
+    tHttpState initialState = iState;
+
     if (!iConnectionClose)
     {
         flushClientRx();
@@ -63,7 +65,6 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
         resetState();
     }
 
-    tHttpState initialState = iState;
     if ((eIdle != iState) && (eRequestStarted != iState))
     {
         return HTTP_ERROR_API;
