@@ -44,11 +44,7 @@ public:
 // FIXME Write longer API request, using port and user-agent, example
 // FIXME Update tempToPachube example to calculate Content-Length correctly
 
-#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
-    HttpClient(Client& aClient, const char* aProxy =NULL, uint16_t aProxyPort =0);
-#else
     HttpClient(Client& aClient);
-#endif
 
     /** Start a more complex request.
         Use this when you need to send additional headers in the request,
@@ -440,11 +436,6 @@ protected:
     int iBodyLengthConsumed;
     // How far through a Content-Length header prefix we are
     const char* iContentLengthPtr;
-#ifdef PROXY_ENABLED
-    // Address of the proxy to use, if we're using one
-    IPAddress iProxyAddress;
-    uint16_t iProxyPort;
-#endif
     uint32_t iHttpResponseTimeout;
 };
 

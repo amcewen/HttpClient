@@ -4,36 +4,16 @@
 
 #include "HttpClient.h"
 #include "b64.h"
-#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
-#include <Dns.h>
-#endif
 
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
-#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
-HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
- : iClient(&aClient), iProxyPort(aProxyPort)
-{
-  resetState();
-  if (aProxy)
-  {
-    // Resolve the IP address for the proxy
-    DNSClient dns;
-    dns.begin(Ethernet.dnsServerIP());
-    // Not ideal that we discard any errors here, but not a lot we can do in the ctor
-    // and we'll get a connect error later anyway
-    (void)dns.getHostByName(aProxy, iProxyAddress);
-  }
-}
-#else
 HttpClient::HttpClient(Client& aClient)
  : iClient(&aClient)
 {
   resetState();
 }
-#endif
 
 void HttpClient::resetState()
 {
@@ -64,27 +44,12 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
         return HTTP_ERROR_API;
     }
 
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
+    if (!iClient->connect(aServerName, aServerPort) > 0)
     {
-        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
-        {
 #ifdef LOGGING
-            Serial.println("Proxy connection failed");
+        Serial.println("Connection failed");
 #endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
-    }
-    else
-#endif
-    {
-        if (!iClient->connect(aServerName, aServerPort) > 0)
-        {
-#ifdef LOGGING
-            Serial.println("Connection failed");
-#endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
+        return HTTP_ERROR_CONNECTION_FAILED;
     }
 
     // Now we're connected, send the first part of the request
@@ -107,27 +72,12 @@ int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServe
         return HTTP_ERROR_API;
     }
 
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
+    if (!iClient->connect(aServerAddress, aServerPort) > 0)
     {
-        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
-        {
 #ifdef LOGGING
-            Serial.println("Proxy connection failed");
+        Serial.println("Connection failed");
 #endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
-    }
-    else
-#endif
-    {
-        if (!iClient->connect(aServerAddress, aServerPort) > 0)
-        {
-#ifdef LOGGING
-            Serial.println("Connection failed");
-#endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
+        return HTTP_ERROR_CONNECTION_FAILED;
     }
 
     // Now we're connected, send the first part of the request
@@ -150,28 +100,7 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
     iClient->print(aHttpMethod);
     iClient->print(" ");
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
-    {
-      // We're going through a proxy, send a full URL
-      iClient->print("http://");
-      if (aServerName)
-      {
-        // We've got a server name, so use it
-        iClient->print(aServerName);
-      }
-      else
-      {
-        // We'll have to use the IP address
-        iClient->print(aServerIP);
-      }
-      if (aPort != kHttpPort)
-      {
-        iClient->print(":");
-        iClient->print(aPort);
-      }
-    }
-#endif
+
     iClient->print(aURLPath);
     iClient->println(" HTTP/1.1");
     // The host header, if required
