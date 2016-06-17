@@ -48,6 +48,8 @@ public:
     HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort = kHttpPort);
     HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort = kHttpPort);
 
+    /** Enables connection keep-alive mode
+    */
     void connectionKeepAlive();
 
     /** Start a more complex request.

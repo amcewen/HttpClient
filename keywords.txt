@@ -28,6 +28,7 @@ endOfHeadersReached	KEYWORD2
 endOfBodyReached	KEYWORD2
 completed	KEYWORD2
 contentLength	KEYWORD2
+connectionKeepAlive	KEYWORD2
 headerAvailable	KEYWORD2
 readHeaderName	KEYWORD2
 readHeaderValue	KEYWORD2
