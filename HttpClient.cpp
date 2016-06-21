@@ -4,36 +4,29 @@
 
 #include "HttpClient.h"
 #include "b64.h"
-#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
-#include <Dns.h>
-#endif
 
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
 
-#ifdef PROXY_ENABLED // currently disabled as introduces dependency on Dns.h in Ethernet
-HttpClient::HttpClient(Client& aClient, const char* aProxy, uint16_t aProxyPort)
- : iClient(&aClient), iProxyPort(aProxyPort)
-{
-  resetState();
-  if (aProxy)
-  {
-    // Resolve the IP address for the proxy
-    DNSClient dns;
-    dns.begin(Ethernet.dnsServerIP());
-    // Not ideal that we discard any errors here, but not a lot we can do in the ctor
-    // and we'll get a connect error later anyway
-    (void)dns.getHostByName(aProxy, iProxyAddress);
-  }
-}
-#else
-HttpClient::HttpClient(Client& aClient)
- : iClient(&aClient), iProxyPort(0)
+HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
+ : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
+   iConnectionClose(true), iSendDefaultRequestHeaders(true)
 {
   resetState();
 }
-#endif
+
+HttpClient::HttpClient(Client& aClient, const String& aServerName, uint16_t aServerPort)
+ : HttpClient(aClient, aServerName.c_str(), aServerPort)
+{
+}
+
+HttpClient::HttpClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
+ : iClient(&aClient), iServerName(NULL), iServerAddress(aServerAddress), iServerPort(aServerPort),
+   iConnectionClose(true), iSendDefaultRequestHeaders(true)
+{
+  resetState();
+}
 
 void HttpClient::resetState()
 {
@@ -51,44 +44,66 @@ void HttpClient::stop()
   resetState();
 }
 
+void HttpClient::connectionKeepAlive()
+{
+  iConnectionClose = false;
+}
+
+void HttpClient::noDefaultRequestHeaders()
+{
+  iSendDefaultRequestHeaders = false;
+}
+
 void HttpClient::beginRequest()
 {
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
 {
     tHttpState initialState = iState;
+
+    if (!iConnectionClose)
+    {
+        flushClientRx();
+
+        resetState();
+    }
+
     if ((eIdle != iState) && (eRequestStarted != iState))
     {
         return HTTP_ERROR_API;
     }
 
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
+    if (iConnectionClose || !iClient->connected())
     {
-        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
-        {
+        if (iServerName) {
+            if (!iClient->connect(iServerName, iServerPort) > 0)
+            {
 #ifdef LOGGING
-            Serial.println("Proxy connection failed");
+                Serial.println("Connection failed");
 #endif
-            return HTTP_ERROR_CONNECTION_FAILED;
+                return HTTP_ERROR_CONNECTION_FAILED;
+            }
+        } else {
+            if (!iClient->connect(iServerAddress, iServerPort) > 0)
+            {
+#ifdef LOGGING
+                Serial.println("Connection failed");
+#endif
+                return HTTP_ERROR_CONNECTION_FAILED;
+            }    
         }
     }
     else
-#endif
     {
-        if (!iClient->connect(aServerName, aServerPort) > 0)
-        {
 #ifdef LOGGING
-            Serial.println("Connection failed");
+        Serial.println("Connection already open");
 #endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
     }
 
     // Now we're connected, send the first part of the request
-    int ret = sendInitialHeaders(aServerName, IPAddress(0,0,0,0), aServerPort, aURLPath, aHttpMethod, aUserAgent);
+    int ret = sendInitialHeaders(aURLPath, aHttpMethod);
     if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
     {
         // This was a simple version of the API, so terminate the headers now
@@ -99,50 +114,7 @@ int HttpClient::startRequest(const char* aServerName, uint16_t aServerPort, cons
     return ret;
 }
 
-int HttpClient::startRequest(const IPAddress& aServerAddress, const char* aServerName, uint16_t aServerPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
-{
-    tHttpState initialState = iState;
-    if ((eIdle != iState) && (eRequestStarted != iState))
-    {
-        return HTTP_ERROR_API;
-    }
-
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
-    {
-        if (!iClient->connect(iProxyAddress, iProxyPort) > 0)
-        {
-#ifdef LOGGING
-            Serial.println("Proxy connection failed");
-#endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
-    }
-    else
-#endif
-    {
-        if (!iClient->connect(aServerAddress, aServerPort) > 0)
-        {
-#ifdef LOGGING
-            Serial.println("Connection failed");
-#endif
-            return HTTP_ERROR_CONNECTION_FAILED;
-        }
-    }
-
-    // Now we're connected, send the first part of the request
-    int ret = sendInitialHeaders(aServerName, aServerAddress, aServerPort, aURLPath, aHttpMethod, aUserAgent);
-    if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
-    {
-        // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
-    }
-    // else we'll call it in endRequest or in the first call to print, etc.
-
-    return ret;
-}
-
-int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP, uint16_t aPort, const char* aURLPath, const char* aHttpMethod, const char* aUserAgent)
+int HttpClient::sendInitialHeaders(const char* aURLPath, const char* aHttpMethod)
 {
 #ifdef LOGGING
     Serial.println("Connected");
@@ -150,54 +122,33 @@ int HttpClient::sendInitialHeaders(const char* aServerName, IPAddress aServerIP,
     // Send the HTTP command, i.e. "GET /somepath/ HTTP/1.0"
     iClient->print(aHttpMethod);
     iClient->print(" ");
-#ifdef PROXY_ENABLED
-    if (iProxyPort)
-    {
-      // We're going through a proxy, send a full URL
-      iClient->print("http://");
-      if (aServerName)
-      {
-        // We've got a server name, so use it
-        iClient->print(aServerName);
-      }
-      else
-      {
-        // We'll have to use the IP address
-        iClient->print(aServerIP);
-      }
-      if (aPort != kHttpPort)
-      {
-        iClient->print(":");
-        iClient->print(aPort);
-      }
-    }
-#endif
+
     iClient->print(aURLPath);
     iClient->println(" HTTP/1.1");
-    // The host header, if required
-    if (aServerName)
+    if (iSendDefaultRequestHeaders)
     {
-        iClient->print("Host: ");
-        iClient->print(aServerName);
-        if (aPort != kHttpPort)
+        // The host header, if required
+        if (iServerName)
         {
-          iClient->print(":");
-          iClient->print(aPort);
+            iClient->print("Host: ");
+            iClient->print(iServerName);
+            if (iServerPort != kHttpPort)
+            {
+              iClient->print(":");
+              iClient->print(iServerPort);
+            }
+            iClient->println();
         }
-        iClient->println();
-    }
-    // And user-agent string
-    if (aUserAgent)
-    {
-        sendHeader(HTTP_HEADER_USER_AGENT, aUserAgent);
-    }
-    else
-    {
+        // And user-agent string
         sendHeader(HTTP_HEADER_USER_AGENT, kUserAgent);
     }
-    // We don't support persistent connections, so tell the server to
-    // close this connection after we're done
-    sendHeader(HTTP_HEADER_CONNECTION, "close");
+
+    if (iConnectionClose)
+    {
+        // Tell the server to
+        // close this connection after we're done
+        sendHeader(HTTP_HEADER_CONNECTION, "close");
+    }
 
     // Everything has gone well
     iState = eRequestStarted;
@@ -278,6 +229,17 @@ void HttpClient::finishHeaders()
     iState = eRequestSent;
 }
 
+void HttpClient::flushClientRx()
+{
+    if (iClient->connected())
+    {
+        while (iClient->available())
+        {
+            iClient->read();
+        }
+    }
+}
+
 void HttpClient::endRequest()
 {
     if (iState < eRequestSent)
@@ -299,7 +261,7 @@ int HttpClient::responseStatusCode()
     // Where HTTP-Version is of the form:
     //   HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
 
-    char c = '\0';
+    int c = '\0';
     do
     {
         // Make sure the status code is reset, and likewise the state.  This
@@ -357,6 +319,9 @@ int HttpClient::responseStatusCode()
                         break;
                     case eStatusCodeRead:
                         // We're just waiting for the end of the line now
+                        break;
+
+                    default:
                         break;
                     };
                     // We read something, reset the timeout counter
@@ -431,6 +396,17 @@ int HttpClient::skipResponseHeaders()
     }
 }
 
+int HttpClient::contentLength()
+{
+    // skip the response headers, if they haven't been read already 
+    if (!endOfHeadersReached())
+    {
+        skipResponseHeaders();
+    }
+
+    return iContentLength;
+}
+
 bool HttpClient::endOfBodyReached()
 {
     if (endOfHeadersReached() && (contentLength() != kNoContentLengthHeader))
@@ -443,30 +419,79 @@ bool HttpClient::endOfBodyReached()
 
 int HttpClient::read()
 {
-#if 0 // Fails on WiFi because multi-byte read seems to be broken
-    uint8_t b[1];
-    int ret = read(b, 1);
-    if (ret == 1)
-    {
-        return b[0];
-    }
-    else
-    {
-        return -1;
-    }
-#else
     int ret = iClient->read();
     if (ret >= 0)
     {
         if (endOfHeadersReached() && iContentLength > 0)
-	{
+        {
             // We're outputting the body now and we've seen a Content-Length header
             // So keep track of how many bytes are left
             iBodyLengthConsumed++;
-	}
+        }
     }
     return ret;
-#endif
+}
+
+bool HttpClient::headerAvailable()
+{
+    // clear the currently store header line
+    iHeaderLine = "";
+
+    while (!endOfHeadersReached())
+    {
+        // read a byte from the header
+        int c = readHeader();
+
+        if (c == '\r' || c == '\n')
+        {
+            if (iHeaderLine.length())
+            {
+                // end of the line, all done
+                break;
+            } 
+            else
+            {
+                // ignore any CR or LF characters
+                continue;
+            }
+        }
+
+        // append byte to header line
+        iHeaderLine += (char)c;
+    }
+
+    return (iHeaderLine.length() > 0);
+}
+
+String HttpClient::readHeaderName()
+{
+    int colonIndex = iHeaderLine.indexOf(':');
+
+    if (colonIndex == -1)
+    {
+        return "";
+    }
+
+    return iHeaderLine.substring(0, colonIndex);
+}
+
+String HttpClient::readHeaderValue()
+{
+    int colonIndex = iHeaderLine.indexOf(':');
+    int startIndex = colonIndex + 1;
+
+    if (colonIndex == -1)
+    {
+        return "";
+    }
+
+    // trim any leading whitespace
+    while (startIndex < (int)iHeaderLine.length() && isSpace(iHeaderLine[startIndex]))
+    {
+        startIndex++;
+    }
+
+    return iHeaderLine.substring(startIndex);
 }
 
 int HttpClient::read(uint8_t *buf, size_t size)
@@ -477,9 +502,9 @@ int HttpClient::read(uint8_t *buf, size_t size)
         // We're outputting the body now and we've seen a Content-Length header
         // So keep track of how many bytes are left
         if (ret >= 0)
-	{
+        {
             iBodyLengthConsumed += ret;
-	}
+        }
     }
     return ret;
 }
