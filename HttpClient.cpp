@@ -118,17 +118,19 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
             sendHeader(HTTP_HEADER_CONTENT_LENGTH, aContentLength);
         }
 
-        if ((initialState == eIdle))
+        bool hasBody = (aBody && aContentLength > 0);
+
+        if (initialState == eIdle || hasBody)
         {
             // This was a simple version of the API, so terminate the headers now
             finishHeaders();
-
-            if (aBody && aContentLength > 0)
-            {
-                write(aBody, aContentLength);
-            }
         }
         // else we'll call it in endRequest or in the first call to print, etc.
+
+        if (hasBody)
+        {
+                write(aBody, aContentLength);
+        }
     }
 
     return ret;

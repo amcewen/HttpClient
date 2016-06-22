@@ -75,7 +75,7 @@ public:
     int post(const char* aURLPath);
     int post(const String& aURLPath);
 
-    /** Connect to the server and start to send a POST request
+    /** Connect to the server and send a POST request
         with body and content type
       @param aURLPath     Url to request
       @param aContentType Content type of request body
@@ -93,7 +93,7 @@ public:
     int put(const char* aURLPath);
     int put(const String& aURLPath);
 
-    /** Connect to the server and start to send a PUT request
+    /** Connect to the server and send a PUT request
         with body and content type
       @param aURLPath     Url to request
       @param aContentType Content type of request body
@@ -111,7 +111,7 @@ public:
     int del(const char* aURLPath);
     int del(const String& aURLPath);
 
-    /** Connect to the server and start to send a DELETE request
+    /** Connect to the server and send a DELETE request
         with body and content type
       @param aURLPath     Url to request
       @param aContentType Content type of request body
@@ -123,6 +123,7 @@ public:
     int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
 
     /** Connect to the server and start to send the request.
+        If a body is provided, the entire request (including headers and body) will be sent
       @param aURLPath        Url to request
       @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST", etc.
       @param aContentType    Content type of request body (optional)
