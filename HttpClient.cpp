@@ -509,6 +509,24 @@ int HttpClient::contentLength()
     return iContentLength;
 }
 
+String HttpClient::responseBody()
+{
+    int bodyLength = contentLength();
+    String response;
+
+    if (bodyLength > 0)
+    {
+        response.reserve(bodyLength);
+    }
+
+    while (available())
+    {
+        response += (char)read();
+    }
+
+    return response;
+}
+
 bool HttpClient::endOfBodyReached()
 {
     if (endOfHeadersReached() && (contentLength() != kNoContentLengthHeader))

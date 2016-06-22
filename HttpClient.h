@@ -245,6 +245,13 @@ public:
     */
     int contentLength();
 
+    /** Return the response body as a String
+      Also skips response headers if they have not been read already
+      MUST be called after responseStatusCode()
+      @return response body of request as a String
+    */
+    String responseBody();
+
     /** Enables connection keep-alive mode
     */
     void connectionKeepAlive();

@@ -26,7 +26,6 @@ HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
 String response;
 int statusCode = 0;
-int contentLength = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -55,16 +54,9 @@ void loop() {
 
   client.del("/", contentType, delData);
 
-  // read the status code and content length of the response
+  // read the status code and body of the response
   statusCode = client.responseStatusCode();
-  contentLength = client.contentLength();
-
-  // read the response body
-  response = "";
-  response.reserve(contentLength);
-  while (client.available()) {
-    response += (char)client.read();
-  }
+  response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
