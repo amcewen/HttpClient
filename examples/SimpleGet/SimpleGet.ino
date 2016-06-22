@@ -49,12 +49,9 @@ void setup() {
 
 void loop() {
   Serial.println("making GET request");
+  client.get("/");
 
   // read the status code and content length of the response
-  client.beginRequest();
-  client.get("/");
-  client.endRequest();
-
   statusCode = client.responseStatusCode();
   contentLength = client.contentLength();
 

@@ -63,9 +63,7 @@ void loop() {
 
   // send the GET request
   Serial.println("making GET request");
-  client.beginRequest();
   client.get(path);
-  client.endRequest();
 
   // read the status code of the response
   statusCode = client.responseStatusCode();

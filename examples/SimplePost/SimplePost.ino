@@ -50,14 +50,10 @@ void setup() {
 
 void loop() {
   Serial.println("making POST request");
+  String contentType = "application/x-www-form-urlencoded";
   String postData = "name=Alice&age=12";
 
-  client.beginRequest();
-  client.post("/");
-  client.sendHeader("Content-Type", "application/x-www-form-urlencoded");
-  client.sendHeader("Content-Length", postData.length());
-  client.endRequest();
-  client.write((const byte*)postData.c_str(), postData.length());
+  client.post("/", contentType, postData);
 
   // read the status code and content length of the response
   statusCode = client.responseStatusCode();

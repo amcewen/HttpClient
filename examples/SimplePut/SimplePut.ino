@@ -50,14 +50,10 @@ void setup() {
 
 void loop() {
   Serial.println("making PUT request");
+  String contentType = "application/x-www-form-urlencoded";
   String putData = "name=light&age=46";
 
-  client.beginRequest();
-  client.put("/");
-  client.sendHeader("Content-Type", "application/x-www-form-urlencoded");
-  client.sendHeader("Content-Length", putData.length());
-  client.endRequest();
-  client.write((const byte*)putData.c_str(), putData.length());
+  client.put("/", contentType, putData);
 
   // read the status code and content length of the response
   statusCode = client.responseStatusCode();
