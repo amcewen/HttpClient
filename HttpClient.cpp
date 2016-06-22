@@ -327,6 +327,31 @@ int HttpClient::put(const char* aURLPath, const char* aContentType, int aContent
     return startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
 }
 
+int HttpClient::del(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_DELETE);
+}
+
+int HttpClient::del(const String& aURLPath)
+{
+    return del(aURLPath.c_str());
+}
+
+int HttpClient::del(const char* aURLPath, const char* aContentType, const char* aBody)
+{
+    return del(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+}
+
+int HttpClient::del(const String& aURLPath, const String& aContentType, const String& aBody)
+{
+    return del(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+}
+
+int HttpClient::del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+{
+    return startRequest(aURLPath, HTTP_METHOD_DELETE, aContentType, aContentLength, aBody);
+}
+
 int HttpClient::responseStatusCode()
 {
     if (iState < eRequestSent)

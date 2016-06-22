@@ -104,6 +104,24 @@ public:
     int put(const String& aURLPath, const String& aContentType, const String& aBody);
     int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
 
+    /** Connect to the server and start to send a DELETE request.
+      @param aURLPath     Url to request
+      @return 0 if successful, else error
+    */
+    int del(const char* aURLPath);
+    int del(const String& aURLPath);
+
+    /** Connect to the server and start to send a DELETE request
+        with body and content type
+      @param aURLPath     Url to request
+      @param aContentType Content type of request body
+      @param aBody        Body of the request
+      @return 0 if successful, else error
+    */
+    int del(const char* aURLPath, const char* aContentType, const char* aBody);
+    int del(const String& aURLPath, const String& aContentType, const String& aBody);
+    int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+
     /** Connect to the server and start to send the request.
       @param aURLPath        Url to request
       @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST", etc.
