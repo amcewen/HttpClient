@@ -27,7 +27,6 @@ WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
 int statusCode = 0;
-int contentLength = 0;
 String response;
 
 void setup() {
@@ -56,6 +55,8 @@ void loop() {
   String dweetName = "scandalous-cheese-hoarder";
   String path = "/dweet/for/" + dweetName;
 
+  String contentType = "application/json";
+
   // assemble the body of the POST message:
   int sensorValue = analogRead(A0);
   String postData = "{\"sensorValue\":\""; 
@@ -65,23 +66,11 @@ void loop() {
   Serial.println("making POST request");
 
   // send the POST request
-  client.beginRequest();
-  client.post(path);
-  client.sendHeader("Content-Type", "application/json");
-  client.sendHeader("Content-Length", postData.length());
-  client.endRequest();
-  client.write((const byte*)postData.c_str(), postData.length());
+  client.post(path, contentType, postData);
 
-  // read the status code and content length of the response
+  // read the status code and body of the response
   statusCode = client.responseStatusCode();
-  contentLength = client.contentLength();
-
-  // read the response body
-  response = "";
-  response.reserve(contentLength);
-  while (client.available()) {
-    response += (char)client.read();
-  }
+  response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);

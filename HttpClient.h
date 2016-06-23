@@ -31,6 +31,7 @@ static const int HTTP_ERROR_INVALID_RESPONSE =-4;
 #define HTTP_METHOD_PUT    "PUT"
 #define HTTP_METHOD_DELETE "DELETE"
 #define HTTP_HEADER_CONTENT_LENGTH "Content-Length"
+#define HTTP_HEADER_CONTENT_TYPE   "Content-Type"
 #define HTTP_HEADER_CONNECTION     "Connection"
 #define HTTP_HEADER_USER_AGENT     "User-Agent"
 
@@ -64,39 +65,77 @@ public:
       @param aURLPath     Url to request
       @return 0 if successful, else error
     */
-    int get(const char* aURLPath)
-      { return startRequest(aURLPath, HTTP_METHOD_GET); }
-
-    int get(const String& aURLPath)
-      { return get(aURLPath.c_str()); }
+    int get(const char* aURLPath);
+    int get(const String& aURLPath);
 
     /** Connect to the server and start to send a POST request.
       @param aURLPath     Url to request
       @return 0 if successful, else error
     */
-    int post(const char* aURLPath)
-      { return startRequest(aURLPath, HTTP_METHOD_POST); }
+    int post(const char* aURLPath);
+    int post(const String& aURLPath);
 
-    int post(const String& aURLPath)
-      { return post(aURLPath.c_str()); }
+    /** Connect to the server and send a POST request
+        with body and content type
+      @param aURLPath     Url to request
+      @param aContentType Content type of request body
+      @param aBody        Body of the request
+      @return 0 if successful, else error
+    */
+    int post(const char* aURLPath, const char* aContentType, const char* aBody);
+    int post(const String& aURLPath, const String& aContentType, const String& aBody);
+    int post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
 
     /** Connect to the server and start to send a PUT request.
       @param aURLPath     Url to request
       @return 0 if successful, else error
     */
-    int put(const char* aURLPath)
-      { return startRequest(aURLPath, HTTP_METHOD_PUT); }
+    int put(const char* aURLPath);
+    int put(const String& aURLPath);
 
-    int put(const String& aURLPath)
-      { return put(aURLPath.c_str()); }
+    /** Connect to the server and send a PUT request
+        with body and content type
+      @param aURLPath     Url to request
+      @param aContentType Content type of request body
+      @param aBody        Body of the request
+      @return 0 if successful, else error
+    */
+    int put(const char* aURLPath, const char* aContentType, const char* aBody);
+    int put(const String& aURLPath, const String& aContentType, const String& aBody);
+    int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+
+    /** Connect to the server and start to send a DELETE request.
+      @param aURLPath     Url to request
+      @return 0 if successful, else error
+    */
+    int del(const char* aURLPath);
+    int del(const String& aURLPath);
+
+    /** Connect to the server and send a DELETE request
+        with body and content type
+      @param aURLPath     Url to request
+      @param aContentType Content type of request body
+      @param aBody        Body of the request
+      @return 0 if successful, else error
+    */
+    int del(const char* aURLPath, const char* aContentType, const char* aBody);
+    int del(const String& aURLPath, const String& aContentType, const String& aBody);
+    int del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
 
     /** Connect to the server and start to send the request.
-      @param aURLPath     Url to request
-      @param aHttpMethod  Type of HTTP request to make, e.g. "GET", "POST", etc.
+        If a body is provided, the entire request (including headers and body) will be sent
+      @param aURLPath        Url to request
+      @param aHttpMethod     Type of HTTP request to make, e.g. "GET", "POST", etc.
+      @param aContentType    Content type of request body (optional)
+      @param aContentLength  Length of request body (optional)
+      @param aBody           Body of request (optional)
       @return 0 if successful, else error
     */
     int startRequest(const char* aURLPath,
-                     const char* aHttpMethod);
+                     const char* aHttpMethod,
+                     const char* aContentType = NULL,
+                     int aContentLength = -1,
+                     const byte aBody[] = NULL);
 
     /** Send an additional header line.  This can only be called in between the
       calls to startRequest and finishRequest.
@@ -206,6 +245,13 @@ public:
       Content-Length header was returned by the server
     */
     int contentLength();
+
+    /** Return the response body as a String
+      Also skips response headers if they have not been read already
+      MUST be called after responseStatusCode()
+      @return response body of request as a String
+    */
+    String responseBody();
 
     /** Enables connection keep-alive mode
     */

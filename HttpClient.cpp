@@ -59,16 +59,17 @@ void HttpClient::beginRequest()
   iState = eRequestStarted;
 }
 
-int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
+int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
+                                const char* aContentType, int aContentLength, const byte aBody[])
 {
-    tHttpState initialState = iState;
-
-    if (!iConnectionClose)
+    if (iState == eReadingBody)
     {
         flushClientRx();
 
         resetState();
     }
+
+    tHttpState initialState = iState;
 
     if ((eIdle != iState) && (eRequestStarted != iState))
     {
@@ -104,12 +105,33 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod)
 
     // Now we're connected, send the first part of the request
     int ret = sendInitialHeaders(aURLPath, aHttpMethod);
-    if ((initialState == eIdle) && (HTTP_SUCCESS == ret))
+
+    if (HTTP_SUCCESS == ret)
     {
-        // This was a simple version of the API, so terminate the headers now
-        finishHeaders();
+        if (aContentType)
+        {
+            sendHeader(HTTP_HEADER_CONTENT_TYPE, aContentType);
+        }
+
+        if (aContentLength > 0)
+        {
+            sendHeader(HTTP_HEADER_CONTENT_LENGTH, aContentLength);
+        }
+
+        bool hasBody = (aBody && aContentLength > 0);
+
+        if (initialState == eIdle || hasBody)
+        {
+            // This was a simple version of the API, so terminate the headers now
+            finishHeaders();
+        }
+        // else we'll call it in endRequest or in the first call to print, etc.
+
+        if (hasBody)
+        {
+                write(aBody, aContentLength);
+        }
     }
-    // else we'll call it in endRequest or in the first call to print, etc.
 
     return ret;
 }
@@ -231,12 +253,9 @@ void HttpClient::finishHeaders()
 
 void HttpClient::flushClientRx()
 {
-    if (iClient->connected())
+    while (iClient->available())
     {
-        while (iClient->available())
-        {
-            iClient->read();
-        }
+        iClient->read();
     }
 }
 
@@ -248,6 +267,91 @@ void HttpClient::endRequest()
         finishHeaders();
     }
     // else the end of headers has already been sent, so nothing to do here
+}
+
+int HttpClient::get(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_GET);
+}
+
+int HttpClient::get(const String& aURLPath)
+{
+    return get(aURLPath.c_str());
+}
+
+int HttpClient::post(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_POST);
+}
+
+int HttpClient::post(const String& aURLPath)
+{
+    return post(aURLPath.c_str());
+}
+
+int HttpClient::post(const char* aURLPath, const char* aContentType, const char* aBody)
+{
+    return post(aURLPath, aContentType, strlen(aBody), (const byte*)aBody);
+}
+
+int HttpClient::post(const String& aURLPath, const String& aContentType, const String& aBody)
+{
+    return post(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+}
+
+int HttpClient::post(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+{
+    return startRequest(aURLPath, HTTP_METHOD_POST, aContentType, aContentLength, aBody);
+}
+
+int HttpClient::put(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_PUT);
+}
+
+int HttpClient::put(const String& aURLPath)
+{
+    return put(aURLPath.c_str());
+}
+
+int HttpClient::put(const char* aURLPath, const char* aContentType, const char* aBody)
+{
+    return put(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+}
+
+int HttpClient::put(const String& aURLPath, const String& aContentType, const String& aBody)
+{
+    return put(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+}
+
+int HttpClient::put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+{
+    return startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
+}
+
+int HttpClient::del(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_DELETE);
+}
+
+int HttpClient::del(const String& aURLPath)
+{
+    return del(aURLPath.c_str());
+}
+
+int HttpClient::del(const char* aURLPath, const char* aContentType, const char* aBody)
+{
+    return del(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+}
+
+int HttpClient::del(const String& aURLPath, const String& aContentType, const String& aBody)
+{
+    return del(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+}
+
+int HttpClient::del(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+{
+    return startRequest(aURLPath, HTTP_METHOD_DELETE, aContentType, aContentLength, aBody);
 }
 
 int HttpClient::responseStatusCode()
@@ -405,6 +509,24 @@ int HttpClient::contentLength()
     }
 
     return iContentLength;
+}
+
+String HttpClient::responseBody()
+{
+    int bodyLength = contentLength();
+    String response;
+
+    if (bodyLength > 0)
+    {
+        response.reserve(bodyLength);
+    }
+
+    while (available())
+    {
+        response += (char)read();
+    }
+
+    return response;
 }
 
 bool HttpClient::endOfBodyReached()

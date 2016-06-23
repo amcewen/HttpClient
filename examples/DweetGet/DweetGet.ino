@@ -33,7 +33,6 @@ WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
 int statusCode = 0;
-int contentLength = 0;
 String response;
 
 void setup() {
@@ -63,27 +62,13 @@ void loop() {
 
   // send the GET request
   Serial.println("making GET request");
-  client.beginRequest();
   client.get(path);
-  client.endRequest();
 
-  // read the status code of the response
+  // read the status code and body of the response
   statusCode = client.responseStatusCode();
+  response = client.responseBody();
   Serial.print("Status code: ");
   Serial.println(statusCode);
-
-  // read the content length of the response
-  contentLength = client.contentLength();
-  Serial.print("Content Length: ");
-  Serial.println(contentLength);
-
-  // read the response body
-  response = "";
-  response.reserve(contentLength);
-  while (client.available()) {
-    response += (char)client.read();
-  }
-
   Serial.print("Response: ");
   Serial.println(response);
 

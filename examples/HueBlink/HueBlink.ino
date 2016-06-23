@@ -70,6 +70,8 @@ void sendRequest(int light, String cmd, String value) {
   request += light;
   request += "/state/";
 
+  String contentType = "application/json";
+
   // make a string for the JSON command:
   String hueCmd = "{\"" + cmd;
   hueCmd += "\":";
@@ -81,23 +83,11 @@ void sendRequest(int light, String cmd, String value) {
   Serial.print("JSON command to server: ");
 
   // make the PUT request to the hub:
-  httpClient.beginRequest();
-  httpClient.put(request);
-  httpClient.sendHeader("Content-Type", "application/json");
-  httpClient.sendHeader("Content-Length", hueCmd.length());
-  httpClient.endRequest();
-  httpClient.write((const byte*)hueCmd.c_str(), hueCmd.length());
+  httpClient.put(request, contentType, hueCmd);
   
-  // read the status code and content length of the response
+  // read the status code and body of the response
   int statusCode = httpClient.responseStatusCode();
-  int contentLength = httpClient.contentLength();
-
-  // read the response body
-  String response = "";
-  response.reserve(contentLength);
-  while (httpClient.available()) {
-    response += (char)httpClient.read();
-  }
+  String response = httpClient.responseBody();
 
   Serial.println(hueCmd);
   Serial.print("Status code from server: ");

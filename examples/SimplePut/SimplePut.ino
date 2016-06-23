@@ -26,7 +26,6 @@ HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
 String response;
 int statusCode = 0;
-int contentLength = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -50,25 +49,14 @@ void setup() {
 
 void loop() {
   Serial.println("making PUT request");
+  String contentType = "application/x-www-form-urlencoded";
   String putData = "name=light&age=46";
 
-  client.beginRequest();
-  client.put("/");
-  client.sendHeader("Content-Type", "application/x-www-form-urlencoded");
-  client.sendHeader("Content-Length", putData.length());
-  client.endRequest();
-  client.write((const byte*)putData.c_str(), putData.length());
+  client.put("/", contentType, putData);
 
-  // read the status code and content length of the response
+  // read the status code and body of the response
   statusCode = client.responseStatusCode();
-  contentLength = client.contentLength();
-
-  // read the response body
-  response = "";
-  response.reserve(contentLength);
-  while (client.available()) {
-    response += (char)client.read();
-  }
+  response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
