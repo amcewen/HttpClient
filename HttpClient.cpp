@@ -439,7 +439,7 @@ int HttpClient::responseStatusCode()
                 delay(kHttpWaitForDataDelay);
             }
         }
-        if ( (c == '\n') && (iStatusCode < 200) )
+        if ( (c == '\n') && (iStatusCode < 200 && iStatusCode != 101) )
         {
             // We've reached the end of an informational status line
             c = '\0'; // Clear c so we'll go back into the data reading loop
@@ -447,7 +447,7 @@ int HttpClient::responseStatusCode()
     }
     // If we've read a status code successfully but it's informational (1xx)
     // loop back to the start
-    while ( (iState == eStatusCodeRead) && (iStatusCode < 200) );
+    while ( (iState == eStatusCodeRead) && (iStatusCode < 200 && iStatusCode != 101) );
 
     if ( (c == '\n') && (iState == eStatusCodeRead) )
     {
