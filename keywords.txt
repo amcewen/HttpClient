@@ -42,6 +42,7 @@ parseMessage	KEYWORD2
 messageType	KEYWORD2
 isFinal	KEYWORD2
 readString	KEYWORD2
+ping	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

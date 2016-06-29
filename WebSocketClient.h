@@ -63,6 +63,11 @@ public:
     */
     String readString();
 
+    /** Send a ping
+      @return 0 if successful, else error
+    */
+    int ping();
+
     // Inherited from Print
     virtual size_t write(uint8_t aByte);
     virtual size_t write(const uint8_t *aBuffer, size_t aSize);
@@ -74,6 +79,9 @@ public:
     virtual int read();
     virtual int read(uint8_t *buf, size_t size);
     virtual int peek();
+
+private:
+    void flushRx();
 
 private:
     uint8_t iTxMessageType;

@@ -6,17 +6,20 @@
 #include "WebSocketClient.h"
 
 WebSocketClient::WebSocketClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
- : HttpClient(aClient, aServerName, aServerPort)
+ : HttpClient(aClient, aServerName, aServerPort),
+   iRxSize(0)
 {
 }
 
 WebSocketClient::WebSocketClient(Client& aClient, const String& aServerName, uint16_t aServerPort) 
- : HttpClient(aClient, aServerName, aServerPort)
+ : HttpClient(aClient, aServerName, aServerPort),
+   iRxSize(0)
 {
 }
 
 WebSocketClient::WebSocketClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
- : HttpClient(aClient, aServerAddress, aServerPort)
+ : HttpClient(aClient, aServerAddress, aServerPort),
+   iRxSize(0)
 {
 }
 
@@ -54,6 +57,8 @@ int WebSocketClient::begin(const char* aPath)
             skipResponseHeaders();
         }
     }
+
+    iRxSize = 0;
 
     // status code of 101 means success
     return (status == 101) ? 0 : status;
@@ -152,6 +157,8 @@ size_t WebSocketClient::write(const uint8_t *aBuffer, size_t aSize)
 
 int WebSocketClient::parseMessage()
 {
+    flushRx();
+
     // make sure 2 bytes (opcode + length)
     // are available
     if (HttpClient::available() < 2)
@@ -208,6 +215,29 @@ int WebSocketClient::parseMessage()
 
     iRxMaskIndex = 0;
 
+    if (TYPE_CONNECTION_CLOSE == messageType())
+    {
+        flushRx();
+        stop();
+        iRxSize = 0;
+    }
+    else if (TYPE_PING == messageType())
+    {
+        beginMessage(TYPE_PONG);
+        while(available())
+        {
+            write(read());
+        }
+        endMessage();
+
+        iRxSize = 0;
+    }
+    else if (TYPE_PONG == messageType())
+    {
+        flushRx();
+        iRxSize = 0;
+    }
+
     return iRxSize;
 }
 
@@ -237,6 +267,21 @@ String WebSocketClient::readString()
     }
 
     return s;
+}
+
+int WebSocketClient::ping()
+{
+    uint8_t pingData[16];
+
+    // create random data for the ping
+    for (int i = 0; i < (int)sizeof(pingData); i++)
+    {
+        pingData[i] = random(0xff);
+    }
+
+    beginMessage(TYPE_PING);
+    write(pingData, sizeof(pingData));
+    return endMessage();
 }
 
 int WebSocketClient::available()
@@ -292,4 +337,12 @@ int WebSocketClient::peek()
     }
 
     return p;
+}
+
+void WebSocketClient::flushRx()
+{
+    while(available())
+    {
+        read();
+    }
 }
