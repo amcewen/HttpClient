@@ -84,6 +84,7 @@ private:
     void flushRx();
 
 private:
+    bool iTxStarted;
     uint8_t iTxMessageType;
     uint8_t iTxBuffer[128];
     uint64_t iTxSize;

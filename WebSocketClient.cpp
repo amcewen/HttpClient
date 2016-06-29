@@ -7,18 +7,21 @@
 
 WebSocketClient::WebSocketClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
  : HttpClient(aClient, aServerName, aServerPort),
+   iTxStarted(false),
    iRxSize(0)
 {
 }
 
 WebSocketClient::WebSocketClient(Client& aClient, const String& aServerName, uint16_t aServerPort) 
  : HttpClient(aClient, aServerName, aServerPort),
+   iTxStarted(false),
    iRxSize(0)
 {
 }
 
 WebSocketClient::WebSocketClient(Client& aClient, const IPAddress& aServerAddress, uint16_t aServerPort)
  : HttpClient(aClient, aServerAddress, aServerPort),
+   iTxStarted(false),
    iRxSize(0)
 {
 }
@@ -71,6 +74,13 @@ int WebSocketClient::begin(const String& aPath)
 
 int WebSocketClient::beginMessage(int aType)
 {
+    if (iTxStarted)
+    {
+        // fail TX already started
+        return 1;
+    }
+
+    iTxStarted = true;
     iTxMessageType = (aType & 0xf);
     iTxSize = 0;
 
@@ -79,6 +89,12 @@ int WebSocketClient::beginMessage(int aType)
 
 int WebSocketClient::endMessage()
 {
+    if (!iTxStarted)
+    {
+        // fail TX not started
+        return 1;
+    }
+
     // send FIN + the message type (opcode)
     HttpClient::write(0x80 | iTxMessageType);
 
@@ -121,11 +137,12 @@ int WebSocketClient::endMessage()
         iTxBuffer[i] ^= maskKey[i % sizeof(maskKey)];
     }
 
-    int txSize = iTxSize;
+    size_t txSize = iTxSize;
 
+    iTxStarted = false;
     iTxSize = 0;
 
-    return HttpClient::write(iTxBuffer, txSize);
+    return (HttpClient::write(iTxBuffer, txSize) == txSize) ? 0 : 1;
 }
 
 size_t WebSocketClient::write(uint8_t aByte)
@@ -139,6 +156,12 @@ size_t WebSocketClient::write(const uint8_t *aBuffer, size_t aSize)
     {
         // have not upgraded the connection yet
         return HttpClient::write(aBuffer, aSize);
+    }
+
+    if (!iTxStarted)
+    {
+        // fail TX not   started
+        return 0;
     }
 
     // check if the write size, fits in the buffer
