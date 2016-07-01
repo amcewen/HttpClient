@@ -2,12 +2,13 @@
   "name": "node_test_server",
   "version": "0.0.1",
   "author": {
-  	"name":"Tom Igoe"
-   },
+    "name": "Tom Igoe"
+  },
   "dependencies": {
+    "body-parser": ">=1.11.0",
     "express": ">=4.0.0",
-    "body-parser" : ">=1.11.0",
-    "multer" : "*"
+    "multer": "*",
+    "ws": "^1.1.1"
   },
   "engines": {
     "node": "0.10.x",

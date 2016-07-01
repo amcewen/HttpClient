@@ -6,5 +6,6 @@
 #define ArduinoHttpClient_h
 
 #include "HttpClient.h"
+#include "WebSocketClient.h"
 
 #endif
