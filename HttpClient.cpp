@@ -78,7 +78,8 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 
     if (iConnectionClose || !iClient->connected())
     {
-        if (iServerName) {
+        if (iServerName)
+        {
             if (!iClient->connect(iServerName, iServerPort) > 0)
             {
 #ifdef LOGGING
@@ -86,7 +87,9 @@ int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod,
 #endif
                 return HTTP_ERROR_CONNECTION_FAILED;
             }
-        } else {
+        }
+        else
+        {
             if (!iClient->connect(iServerAddress, iServerPort) > 0)
             {
 #ifdef LOGGING

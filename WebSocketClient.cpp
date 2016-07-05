@@ -340,7 +340,8 @@ int WebSocketClient::read(uint8_t *aBuffer, size_t aSize)
         // unmask the RX data if needed
         if (iRxMasked)
         {
-            for (int i = 0; i < (int)aSize; i++, iRxMaskIndex++) {
+            for (int i = 0; i < (int)aSize; i++, iRxMaskIndex++)
+            {
                 aBuffer[i] ^= iRxMaskKey[iRxMaskIndex % sizeof(iRxMaskKey)];
             }
         }
