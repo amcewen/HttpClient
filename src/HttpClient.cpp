@@ -686,6 +686,7 @@ int HttpClient::readHeader()
                 // Just in case we get multiple Content-Length headers, this
                 // will ensure we just get the value of the last one
                 iContentLength = 0;
+                iBodyLengthConsumed = 0;
             }
         }
         else if ((iContentLengthPtr == kContentLengthPrefix) && (c == '\r'))
