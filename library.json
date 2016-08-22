@@ -1,0 +1,12 @@
+{
+  "name": "ArduinoHttpClient",
+  "keywords": "http, web, client, ethernet, wifi, GSM",
+  "description": "ArduinoHttpClient is a library to make it easier to interact with web servers from Arduino",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/arduino-libraries/ArduinoHttpClient.git"
+  },
+  "frameworks": "arduino",
+  "platforms": "*"
+}
