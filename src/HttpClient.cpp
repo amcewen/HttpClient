@@ -32,7 +32,7 @@ void HttpClient::resetState()
 {
   iState = eIdle;
   iStatusCode = 0;
-  iContentLength = 0;
+  iContentLength = kNoContentLengthHeader;
   iBodyLengthConsumed = 0;
   iContentLengthPtr = kContentLengthPrefix;
   iHttpResponseTimeout = kHttpResponseTimeout;
@@ -521,12 +521,35 @@ String HttpClient::responseBody()
 
     if (bodyLength > 0)
     {
-        response.reserve(bodyLength);
+        // try to reserve bodyLength bytes
+        if (response.reserve(bodyLength) == 0) {
+            // String reserve failed
+            return String((const char*)NULL);
+        }
     }
 
-    while (available())
+    // keep on timedRead'ing, until:
+    //  - we have a content length: body length equals consumed or no bytes
+    //                              available
+    //  - no content length:        no bytes are available
+    while (iBodyLengthConsumed != bodyLength)
     {
-        response += (char)read();
+        int c = timedRead();
+
+        if (c == -1) {
+            // read timed out, done
+            break;
+        }
+
+        if (!response.concat((char)c)) {
+            // adding char failed
+            return String((const char*)NULL);
+        }
+    }
+
+    if (bodyLength > 0 && (unsigned int)bodyLength != response.length()) {
+        // failure, we did not read in reponse content length bytes
+        return String((const char*)NULL);
     }
 
     return response;
@@ -663,6 +686,7 @@ int HttpClient::readHeader()
                 // Just in case we get multiple Content-Length headers, this
                 // will ensure we just get the value of the last one
                 iContentLength = 0;
+                iBodyLengthConsumed = 0;
             }
         }
         else if ((iContentLengthPtr == kContentLengthPrefix) && (c == '\r'))
