@@ -332,6 +332,31 @@ int HttpClient::put(const char* aURLPath, const char* aContentType, int aContent
     return startRequest(aURLPath, HTTP_METHOD_PUT, aContentType, aContentLength, aBody);
 }
 
+int HttpClient::patch(const char* aURLPath)
+{
+    return startRequest(aURLPath, HTTP_METHOD_PATCH);
+}
+
+int HttpClient::patch(const String& aURLPath)
+{
+    return patch(aURLPath.c_str());
+}
+
+int HttpClient::patch(const char* aURLPath, const char* aContentType, const char* aBody)
+{
+    return patch(aURLPath, aContentType, strlen(aBody),  (const byte*)aBody);
+}
+
+int HttpClient::patch(const String& aURLPath, const String& aContentType, const String& aBody)
+{
+    return patch(aURLPath.c_str(), aContentType.c_str(), aBody.length(), (const byte*)aBody.c_str());
+}
+
+int HttpClient::patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[])
+{
+    return startRequest(aURLPath, HTTP_METHOD_PATCH, aContentType, aContentLength, aBody);
+}
+
 int HttpClient::del(const char* aURLPath)
 {
     return startRequest(aURLPath, HTTP_METHOD_DELETE);
