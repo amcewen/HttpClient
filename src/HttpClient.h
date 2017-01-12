@@ -29,6 +29,7 @@ static const int HTTP_ERROR_INVALID_RESPONSE =-4;
 #define HTTP_METHOD_GET    "GET"
 #define HTTP_METHOD_POST   "POST"
 #define HTTP_METHOD_PUT    "PUT"
+#define HTTP_METHOD_PATCH  "PATCH"
 #define HTTP_METHOD_DELETE "DELETE"
 #define HTTP_HEADER_CONTENT_LENGTH "Content-Length"
 #define HTTP_HEADER_CONTENT_TYPE   "Content-Type"
@@ -103,6 +104,24 @@ public:
     int put(const char* aURLPath, const char* aContentType, const char* aBody);
     int put(const String& aURLPath, const String& aContentType, const String& aBody);
     int put(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
+
+    /** Connect to the server and start to send a PATCH request.
+      @param aURLPath     Url to request
+      @return 0 if successful, else error
+    */
+    int patch(const char* aURLPath);
+    int patch(const String& aURLPath);
+
+    /** Connect to the server and send a PATCH request
+        with body and content type
+      @param aURLPath     Url to request
+      @param aContentType Content type of request body
+      @param aBody        Body of the request
+      @return 0 if successful, else error
+    */
+    int patch(const char* aURLPath, const char* aContentType, const char* aBody);
+    int patch(const String& aURLPath, const String& aContentType, const String& aBody);
+    int patch(const char* aURLPath, const char* aContentType, int aContentLength, const byte aBody[]);
 
     /** Connect to the server and start to send a DELETE request.
       @param aURLPath     Url to request

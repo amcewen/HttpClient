@@ -17,6 +17,7 @@ WebSocketClient	KEYWORD1
 get	KEYWORD2
 post	KEYWORD2
 put	KEYWORD2
+patch	KEYWORD2
 startRequest	KEYWORD2
 beginRequest	KEYWORD2
 sendHeader	KEYWORD2
