@@ -30,6 +30,7 @@ endOfHeadersReached	KEYWORD2
 endOfBodyReached	KEYWORD2
 completed	KEYWORD2
 contentLength	KEYWORD2
+isChunked	KEYWORD2
 connectionKeepAlive	KEYWORD2
 noDefaultRequestHeaders	KEYWORD2
 headerAvailable	KEYWORD2
