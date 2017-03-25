@@ -650,12 +650,9 @@ int HttpClient::available()
 
 int HttpClient::read()
 {
-    if (iState == eReadingBodyChunk)
+    if (iIsChunked && !available())
     {
-        if (!available())
-        {
-            return -1;
-        }
+        return -1;
     }
 
     int ret = iClient->read();
