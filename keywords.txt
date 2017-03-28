@@ -20,6 +20,7 @@ put	KEYWORD2
 patch	KEYWORD2
 startRequest	KEYWORD2
 beginRequest	KEYWORD2
+beginBody	KEYWORD2
 sendHeader	KEYWORD2
 sendBasicAuth	KEYWORD2
 endRequest	KEYWORD2

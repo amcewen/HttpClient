@@ -58,8 +58,9 @@ void loop() {
   client.sendHeader("Content-Type", "application/x-www-form-urlencoded");
   client.sendHeader("Content-Length", postData.length());
   client.sendHeader("X-Custom-Header", "custom-header-value");
-  client.endRequest();
+  client.beginBody();
   client.print(postData);
+  client.endRequest();
 
   // read the status code and body of the response
   statusCode = client.responseStatusCode();

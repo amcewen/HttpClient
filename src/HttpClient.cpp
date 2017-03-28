@@ -264,6 +264,11 @@ void HttpClient::flushClientRx()
 
 void HttpClient::endRequest()
 {
+    beginBody();
+}
+
+void HttpClient::beginBody()
+{
     if (iState < eRequestSent)
     {
         // We still need to finish off the headers

@@ -62,6 +62,13 @@ public:
     */
     void endRequest();
 
+    /** Start the body of a more complex request.
+        Use this when you need to send the body after additional headers
+        in the request, but can optionally call endRequest() when
+        you are finished.
+    */
+    void beginBody();
+
     /** Connect to the server and start to send a GET request.
       @param aURLPath     Url to request
       @return 0 if successful, else error
