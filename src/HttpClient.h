@@ -270,7 +270,7 @@ public:
     /** Returns if the response body is chunked
       @return true if response body is chunked, false otherwise
     */
-    int isChunked() { return iIsChunked; }
+    int isResponseChunked() { return iIsChunked; }
 
     /** Return the response body as a String
       Also skips response headers if they have not been read already
