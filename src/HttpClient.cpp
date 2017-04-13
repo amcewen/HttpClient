@@ -8,6 +8,7 @@
 // Initialize constants
 const char* HttpClient::kUserAgent = "Arduino/2.2.0";
 const char* HttpClient::kContentLengthPrefix = HTTP_HEADER_CONTENT_LENGTH ": ";
+const char* HttpClient::kTransferEncodingChunked = HTTP_HEADER_TRANSFER_ENCODING ": " HTTP_HEADER_VALUE_CHUNKED;
 
 HttpClient::HttpClient(Client& aClient, const char* aServerName, uint16_t aServerPort)
  : iClient(&aClient), iServerName(aServerName), iServerAddress(), iServerPort(aServerPort),
@@ -35,6 +36,9 @@ void HttpClient::resetState()
   iContentLength = kNoContentLengthHeader;
   iBodyLengthConsumed = 0;
   iContentLengthPtr = kContentLengthPrefix;
+  iTransferEncodingChunkedPtr = kTransferEncodingChunked;
+  iIsChunked = false;
+  iChunkLength = 0;
   iHttpResponseTimeout = kHttpResponseTimeout;
 }
 
@@ -62,7 +66,7 @@ void HttpClient::beginRequest()
 int HttpClient::startRequest(const char* aURLPath, const char* aHttpMethod, 
                                 const char* aContentType, int aContentLength, const byte aBody[])
 {
-    if (iState == eReadingBody)
+    if (iState == eReadingBody || iState == eReadingChunkLength || iState == eReadingBodyChunk)
     {
         flushClientRx();
 
@@ -533,6 +537,11 @@ int HttpClient::skipResponseHeaders()
     }
 }
 
+bool HttpClient::endOfHeadersReached()
+{
+    return (iState == eReadingBody || iState == eReadingChunkLength || iState == eReadingBodyChunk);
+};
+
 int HttpClient::contentLength()
 {
     // skip the response headers, if they haven't been read already 
@@ -595,8 +604,62 @@ bool HttpClient::endOfBodyReached()
     return false;
 }
 
+int HttpClient::available()
+{
+    if (iState == eReadingChunkLength)
+    {
+        while (iClient->available())
+        {
+            char c = iClient->read();
+
+            if (c == '\n')
+            {
+                iState = eReadingBodyChunk;
+                break;
+            }
+            else if (c == '\r')
+            {
+                // no-op
+            }
+            else if (isHexadecimalDigit(c))
+            {
+                char digit[2] = {c, '\0'};
+
+                iChunkLength = (iChunkLength * 16) + strtol(digit, NULL, 16);
+            }
+        }
+    }
+
+    if (iState == eReadingBodyChunk && iChunkLength == 0)
+    {
+        iState = eReadingChunkLength;
+    }
+    
+    if (iState == eReadingChunkLength)
+    {
+        return 0;
+    }
+    
+    int clientAvailable = iClient->available();
+
+    if (iState == eReadingBodyChunk)
+    {
+        return min(clientAvailable, iChunkLength);
+    }
+    else
+    {
+        return clientAvailable;
+    }
+}
+
+
 int HttpClient::read()
 {
+    if (iIsChunked && !available())
+    {
+        return -1;
+    }
+
     int ret = iClient->read();
     if (ret >= 0)
     {
@@ -605,6 +668,16 @@ int HttpClient::read()
             // We're outputting the body now and we've seen a Content-Length header
             // So keep track of how many bytes are left
             iBodyLengthConsumed++;
+        }
+
+        if (iState == eReadingBodyChunk)
+        {
+            iChunkLength--;
+
+            if (iChunkLength == 0)
+            {
+                iState = eReadingChunkLength;
+            }
         }
     }
     return ret;
@@ -719,7 +792,18 @@ int HttpClient::readHeader()
                 iBodyLengthConsumed = 0;
             }
         }
-        else if ((iContentLengthPtr == kContentLengthPrefix) && (c == '\r'))
+        else if (*iTransferEncodingChunkedPtr == c)
+        {
+            // This character matches, just move along
+            iTransferEncodingChunkedPtr++;
+            if (*iTransferEncodingChunkedPtr == '\0')
+            {
+                // We've reached the end of the Transfer Encoding: chunked header
+                iIsChunked = true;
+                iState = eSkipToEndOfHeader;
+            }
+        }
+        else if (((iContentLengthPtr == kContentLengthPrefix) && (iTransferEncodingChunkedPtr == kTransferEncodingChunked)) && (c == '\r'))
         {
             // We've found a '\r' at the start of a line, so this is probably
             // the end of the headers
@@ -727,7 +811,7 @@ int HttpClient::readHeader()
         }
         else
         {
-            // This isn't the Content-Length header, skip to the end of the line
+            // This isn't the Content-Length or Transfer Encoding chunked header, skip to the end of the line
             iState = eSkipToEndOfHeader;
         }
         break;
@@ -747,7 +831,15 @@ int HttpClient::readHeader()
     case eLineStartingCRFound:
         if (c == '\n')
         {
-            iState = eReadingBody;
+            if (iIsChunked)
+            {
+                iState = eReadingChunkLength;
+                iChunkLength = 0;
+            }
+            else
+            {
+                iState = eReadingBody;
+            }
         }
         break;
     default:
@@ -760,6 +852,7 @@ int HttpClient::readHeader()
         // We've got to the end of this line, start processing again
         iState = eStatusCodeRead;
         iContentLengthPtr = kContentLengthPrefix;
+        iTransferEncodingChunkedPtr = kTransferEncodingChunked;
     }
     // And return the character read to whoever wants it
     return c;

@@ -21,6 +21,51 @@ function serverStart() {
 	console.log('Server listening on port '+ port);
 }
 
+app.get('/chunked', function(request, response) {
+	response.write('\n');
+	response.write('           `:;;;,`                      .:;;:.           \n');
+	response.write('        .;;;;;;;;;;;`                :;;;;;;;;;;:     TM \n');
+	response.write('      `;;;;;;;;;;;;;;;`            :;;;;;;;;;;;;;;;      \n');
+	response.write('     :;;;;;;;;;;;;;;;;;;         `;;;;;;;;;;;;;;;;;;     \n');
+	response.write('    ;;;;;;;;;;;;;;;;;;;;;       .;;;;;;;;;;;;;;;;;;;;    \n');
+	response.write('   ;;;;;;;;:`   `;;;;;;;;;     ,;;;;;;;;.`   .;;;;;;;;   \n');
+	response.write('  .;;;;;;,         :;;;;;;;   .;;;;;;;          ;;;;;;;  \n');
+	response.write('  ;;;;;;             ;;;;;;;  ;;;;;;,            ;;;;;;. \n');
+	response.write(' ,;;;;;               ;;;;;;.;;;;;;`              ;;;;;; \n');
+	response.write(' ;;;;;.                ;;;;;;;;;;;`      ```       ;;;;;`\n');
+	response.write(' ;;;;;                  ;;;;;;;;;,       ;;;       .;;;;;\n');
+	response.write('`;;;;:                  `;;;;;;;;        ;;;        ;;;;;\n');
+	response.write(',;;;;`    `,,,,,,,,      ;;;;;;;      .,,;;;,,,     ;;;;;\n');
+	response.write(':;;;;`    .;;;;;;;;       ;;;;;,      :;;;;;;;;     ;;;;;\n');
+	response.write(':;;;;`    .;;;;;;;;      `;;;;;;      :;;;;;;;;     ;;;;;\n');
+	response.write('.;;;;.                   ;;;;;;;.        ;;;        ;;;;;\n');
+	response.write(' ;;;;;                  ;;;;;;;;;        ;;;        ;;;;;\n');
+	response.write(' ;;;;;                 .;;;;;;;;;;       ;;;       ;;;;;,\n');
+	response.write(' ;;;;;;               `;;;;;;;;;;;;                ;;;;; \n');
+	response.write(' `;;;;;,             .;;;;;; ;;;;;;;              ;;;;;; \n');
+	response.write('  ;;;;;;:           :;;;;;;.  ;;;;;;;            ;;;;;;  \n');
+	response.write('   ;;;;;;;`       .;;;;;;;,    ;;;;;;;;        ;;;;;;;:  \n');
+	response.write('    ;;;;;;;;;:,:;;;;;;;;;:      ;;;;;;;;;;:,;;;;;;;;;;   \n');
+	response.write('    `;;;;;;;;;;;;;;;;;;;.        ;;;;;;;;;;;;;;;;;;;;    \n');
+	response.write('      ;;;;;;;;;;;;;;;;;           :;;;;;;;;;;;;;;;;:     \n');
+	response.write('       ,;;;;;;;;;;;;;,              ;;;;;;;;;;;;;;       \n');
+	response.write('         .;;;;;;;;;`                  ,;;;;;;;;:         \n');
+	response.write('                                                         \n');
+	response.write('                                                         \n');
+	response.write('                                                         \n');
+	response.write('                                                         \n');
+	response.write('    ;;;   ;;;;;`  ;;;;:  .;;  ;; ,;;;;;, ;;. `;,  ;;;;   \n');
+	response.write('    ;;;   ;;:;;;  ;;;;;; .;;  ;; ,;;;;;: ;;; `;, ;;;:;;  \n');
+	response.write('   ,;:;   ;;  ;;  ;;  ;; .;;  ;;   ,;,   ;;;,`;, ;;  ;;  \n');
+	response.write('   ;; ;:  ;;  ;;  ;;  ;; .;;  ;;   ,;,   ;;;;`;, ;;  ;;. \n');
+	response.write('   ;: ;;  ;;;;;:  ;;  ;; .;;  ;;   ,;,   ;;`;;;, ;;  ;;` \n');
+	response.write('  ,;;;;;  ;;`;;   ;;  ;; .;;  ;;   ,;,   ;; ;;;, ;;  ;;  \n');
+	response.write('  ;;  ,;, ;; .;;  ;;;;;:  ;;;;;: ,;;;;;: ;;  ;;, ;;;;;;  \n');
+	response.write('  ;;   ;; ;;  ;;` ;;;;.   `;;;:  ,;;;;;, ;;  ;;,  ;;;;   \n');
+	response.write('\n');
+	response.end();
+});
+
 // this is the POST handler:
 app.all('/*', function (request, response) {
 	console.log('Got a ' + request.method + ' request');
