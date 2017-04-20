@@ -1,3 +1,9 @@
+## ArduinoHttpClient 0.3.0 - 2017.04.20
+
+* Added support for PATCH operations
+* Added support for chunked response bodies
+* Added new beginBody API
+
 ## ArduinoHttpClient 0.2.0 - 2017.01.12
 
 * Added PATCH method
