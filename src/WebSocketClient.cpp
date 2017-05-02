@@ -35,8 +35,8 @@ int WebSocketClient::begin(const char* aPath)
 
     if (status == 0)
     {
-        uint8_t randomKey[13];
-        char base64RandomKey[21];
+        uint8_t randomKey[16];
+        char base64RandomKey[25];
 
         // create a random key for the connection upgrade
         for (int i = 0; i < (int)sizeof(randomKey); i++)
