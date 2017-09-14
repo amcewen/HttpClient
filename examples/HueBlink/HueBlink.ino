@@ -13,11 +13,7 @@
   This example  shows how to concatenate Strings to assemble the
   PUT request and the body of the request.
 
-  note: WiFi SSID and password are stored in config.h file.
-  If it is not present, add a new tab, call it "config.h" 
-  and add the following variables:
-  char ssid[] = "ssid";     //  your network SSID (name)
-  char pass[] = "password"; // your network password
+
 
    modified 15 Feb 2016 
    by Tom Igoe (tigoe) to match new API
@@ -26,9 +22,15 @@
 #include <SPI.h>
 #include <WiFi101.h>
 #include <ArduinoHttpClient.h>
-#include "config.h"
+#include "arduino_secrets.h"
+
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 int status = WL_IDLE_STATUS;      // the Wifi radio's status
+
 char hueHubIP[] = "192.168.0.3";  // IP address of the HUE bridge
 String hueUserName = "huebridgeusername"; // hue bridge username
 

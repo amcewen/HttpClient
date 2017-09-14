@@ -16,7 +16,12 @@
  
 #include <ArduinoHttpClient.h>
 #include <WiFi101.h>
-#include "config.h"
+
+#include "arduino_secrets.h"
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 char serverAddress[] = "192.168.0.3";  // server address
 int port = 8080;

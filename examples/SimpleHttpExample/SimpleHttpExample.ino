@@ -11,8 +11,14 @@
 
 // This example downloads the URL "http://arduino.cc/"
 
-char ssid[] = "yourNetwork";     //  your network SSID (name)
-char pass[] = "secretPassword";  // your network password
+#include "arduino_secrets.h"
+
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
+
+
 
 // Name of the server we want to connect to
 const char kHostname[] = "arduino.cc";

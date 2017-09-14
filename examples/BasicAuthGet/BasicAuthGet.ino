@@ -2,11 +2,7 @@
   GET client with HTTP basic authentication for ArduinoHttpClient library
   Connects to server once every five seconds, sends a GET request
 
-  note: WiFi SSID and password are stored in config.h file.
-  If it is not present, add a new tab, call it "config.h" 
-  and add the following variables:
-  char ssid[] = "ssid";     //  your network SSID (name)
-  char pass[] = "password"; // your network password
+ 
 
   created 14 Feb 2016
   by Tom Igoe
@@ -17,7 +13,11 @@
  */
 #include <ArduinoHttpClient.h>
 #include <WiFi101.h>
-#include "config.h"
+#include "arduino_secrets.h"
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 char serverAddress[] = "192.168.0.3";  // server address
 int port = 8080;

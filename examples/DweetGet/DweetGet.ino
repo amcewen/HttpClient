@@ -9,11 +9,7 @@
 
   For more on dweet.io, see https://dweet.io/play/
 
-  note: WiFi SSID and password are stored in config.h file.
-  If it is not present, add a new tab, call it "config.h"
-  and add the following variables:
-  char ssid[] = "ssid";     //  your network SSID (name)
-  char pass[] = "password"; // your network password
+
 
   created 15 Feb 2016
   updated 16 Feb 2016
@@ -23,7 +19,12 @@
 */
 #include <ArduinoHttpClient.h>
 #include <WiFi101.h>
-#include "config.h"
+
+#include "arduino_secrets.h"
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 const char serverAddress[] = "dweet.io";  // server address
 int port = 80;

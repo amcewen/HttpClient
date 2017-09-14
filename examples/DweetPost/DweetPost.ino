@@ -18,7 +18,12 @@
 */
 #include <ArduinoHttpClient.h>
 #include <WiFi101.h>
-#include "config.h"
+
+#include "arduino_secrets.h"
+///////please enter your sensitive data in the Secret tab/arduino_secrets.h
+/////// Wifi Settings ///////
+char ssid[] = SECRET_SSID;
+char pass[] = SECRET_PASS;
 
 const char serverAddress[] = "dweet.io";  // server address
 int port = 80;
