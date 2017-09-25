@@ -1,3 +1,8 @@
+## ArduinoHttpClient 0.3.1 - 2017.09.25
+
+* Changed examples to support Arduino Create secret tabs
+* Increase WebSocket secrect-key length to 24 characters
+
 ## ArduinoHttpClient 0.3.0 - 2017.04.20
 
 * Added support for PATCH operations
