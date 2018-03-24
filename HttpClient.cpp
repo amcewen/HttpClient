@@ -358,6 +358,10 @@ int HttpClient::responseStatusCode()
                     case eStatusCodeRead:
                         // We're just waiting for the end of the line now
                         break;
+				    
+		    default:
+			// Do nothing
+			break;
                     };
                     // We read something, reset the timeout counter
                     timeoutStart = millis();
