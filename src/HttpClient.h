@@ -166,7 +166,7 @@ public:
                      const byte aBody[] = NULL);
 
     /** Send an additional header line.  This can only be called in between the
-      calls to startRequest and finishRequest.
+      calls to beginRequest and endRequest.
       @param aHeader Header line to send, in its entirety (but without the
                      trailing CRLF.  E.g. "Authorization: Basic YQDDCAIGES" 
     */
