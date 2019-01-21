@@ -2,12 +2,12 @@
   GET client with HTTP basic authentication for ArduinoHttpClient library
   Connects to server once every five seconds, sends a GET request
 
- 
-
   created 14 Feb 2016
   by Tom Igoe
   modified 3 Jan 2017 to add HTTP basic authentication
   by Sandeep Mistry
+  modified 19 Jan 2019
+  by Tom Igoe
   
   this example is in the public domain
  */
@@ -25,8 +25,6 @@ int port = 8080;
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
-String response;
-int statusCode = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -56,8 +54,8 @@ void loop() {
   client.endRequest();
 
   // read the status code and body of the response
-  statusCode = client.responseStatusCode();
-  response = client.responseBody();
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
@@ -66,4 +64,3 @@ void loop() {
   Serial.println("Wait five seconds");
   delay(5000);
 }
-
