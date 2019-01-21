@@ -1,2 +1,3 @@
 .development
 examples/node_test_server/node_modules/
+.DS_Store
