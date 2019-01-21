@@ -2,10 +2,9 @@
   Simple DELETE client for ArduinoHttpClient library
   Connects to server once every five seconds, sends a DELETE request
   and a request body
-
- 
-
+  
   created 14 Feb 2016
+  modified 21 Jan 2019
   by Tom Igoe
   
   this example is in the public domain
@@ -19,7 +18,6 @@
 /////// Wifi Settings ///////
 char ssid[] = SECRET_SSID;
 char pass[] = SECRET_PASS;
-
 
 char serverAddress[] = "192.168.0.3";  // server address
 int port = 8080;
