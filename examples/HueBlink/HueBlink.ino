@@ -13,8 +13,6 @@
   This example  shows how to concatenate Strings to assemble the
   PUT request and the body of the request.
 
-
-
    modified 15 Feb 2016 
    by Tom Igoe (tigoe) to match new API
 */
@@ -98,5 +96,3 @@ void sendRequest(int light, String cmd, String value) {
   Serial.println(response);
   Serial.println();
 }
-
-

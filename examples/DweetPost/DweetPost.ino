@@ -5,13 +5,8 @@
 
   Shows how to use Strings to assemble path and body
 
-  note: WiFi SSID and password are stored in config.h file.
-  If it is not present, add a new tab, call it "config.h"
-  and add the following variables:
-  char ssid[] = "ssid";     //  your network SSID (name)
-  char pass[] = "password"; // your network password
-
   created 15 Feb 2016
+  updated 21 Jan 2019
   by Tom Igoe
 
   this example is in the public domain
@@ -31,8 +26,6 @@ int port = 80;
 WiFiClient wifi;
 HttpClient client = HttpClient(wifi, serverAddress, port);
 int status = WL_IDLE_STATUS;
-int statusCode = 0;
-String response;
 
 void setup() {
   Serial.begin(9600);
@@ -74,8 +67,8 @@ void loop() {
   client.post(path, contentType, postData);
 
   // read the status code and body of the response
-  statusCode = client.responseStatusCode();
-  response = client.responseBody();
+  int statusCode = client.responseStatusCode();
+  String response = client.responseBody();
 
   Serial.print("Status code: ");
   Serial.println(statusCode);
