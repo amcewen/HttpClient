@@ -3,8 +3,6 @@
   Connects to server once every five seconds, sends a POST request
   and a request body
 
-
-
   created 14 Feb 2016
   modified 21 Jan 2019
   by Tom Igoe
