@@ -18,14 +18,14 @@ void main()
 }
 */
 
-int b64_encode(const unsigned char* aInput, int aInputLen, unsigned char* aOutput, int aOutputLen)
+void b64_encode(const unsigned char* aInput, int aInputLen, unsigned char* aOutput, int aOutputLen)
 {
     // Work out if we've got enough space to encode the input
     // Every 6 bits of input becomes a byte of output
     if (aOutputLen < (aInputLen*8)/6)
     {
         // FIXME Should we return an error here, or just the length
-        return (aInputLen*8)/6;
+        // return (aInputLen*8)/6;
     }
 
     // If we get here we've got enough space to do the encoding
